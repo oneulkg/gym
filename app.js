@@ -19,7 +19,7 @@ function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEac
 $$('#langChips button').forEach(c=>c.onclick=()=>{st.lang=c.dataset.l;save();applyLang()});
 $$('#unitChips button').forEach(c=>c.onclick=()=>{const nu=c.dataset.u;if(nu===st.unit)return;
  const conv=v=>{const kg=L.toKg(+v,st.unit);return Math.round(L.toU(kg,nu)*2)/2};
- const pt=$('#pt').value;st.unit=nu;$('#pt').value=pt?L.rnd(+conv(pt),nu==='lb'?5:2.5):'';st.barSel='std';$('#pb').value=nu==='lb'?45:20;sess=[];save();applyLang()});
+ const pt=$('#pt').value,npt=pt?L.rnd(+conv(pt),nu==='lb'?5:2.5):'';st.unit=nu;$('#pt').value=npt;st.barSel='std';$('#pb').value=nu==='lb'?45:20;sess=[];save();applyLang()});
 // ---- 1 기록
 let sess=[];
 const lastOf=n=>st.log.filter(x=>x.ex===n).slice(-1)[0];
@@ -47,7 +47,7 @@ if(!$('#pb').value){$('#pb').value=U()==='lb'?45:20;$('#pt').value=U()==='lb'?13
 function renderPlate(){const ps=plateSet(),ks=Object.keys(ps).map(Number).sort((a,b)=>b-a),bn=I18N[st.lang].bars,bars=BARS[U()];
  if(!bars.some(b=>b[0]===st.barSel))st.barSel='std';
  const cur=bars.find(b=>b[0]===st.barSel);if(cur[1]!=null)$('#pb').value=cur[1];$('#pbWrap').hidden=cur[1]!=null;
- $('#barChips').innerHTML=bars.map(([k,v])=>`<button class="chip ${k===st.barSel?'on':''}" data-k="${k}">${bn[k]}</button>`).join('');
+ $('#barChips').innerHTML=bars.map(([k,v])=>`<button class="chip ${k===st.barSel?'on':''}" data-k="${k}">${v==null?bn[k]:(bn[k]?bn[k]+' ':'')+v}</button>`).join('');
  $$('#barChips .chip').forEach(b=>b.onclick=()=>{st.barSel=b.dataset.k;save();renderPlate();if(st.barSel==='cus')$('#pb').focus()});
  $('#plChips').innerHTML=ks.map(k=>`<button class="chip ${ps[k]?'on':''}" data-p="${k}">${k} ${UL()}</button>`).join('');
  $$('#plChips .chip').forEach(b=>b.onclick=()=>{ps[b.dataset.p]=ps[b.dataset.p]?0:1;save();renderPlate()});

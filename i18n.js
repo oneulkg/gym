@@ -12,7 +12,7 @@ last:'지난번 {d}: {w} · {r}회',noHist:'아직 기록이 없어요.',hDate:'
 side:'한쪽',none:'원판 없음',fx:'{t} = 바 {b} + 한쪽 {s}',fxBar:'{t} = 바만 ({b})',exactOk:'✅ 정확히 맞아요',below:'⚠ 원하는 무게가 바({b})보다 가벼워요. 바만 드세요.',notPos:'⚠ {t}은 이 원판으로 정확히 안 돼요. 가까운 무게를 눌러 보세요:',lowerB:'↓ 아래 {w}',higherB:'↑ 위 {w}',pickT:'원하는 무게와 원판을 선택하세요',
 done:'끝!',doneT:'⏰ 휴식 끝!',notif:'휴식 끝! 다음 세트 가요 💪',s60:'60초',s90:'90초',s120:'2분',s180:'3분',min:'{n}분',
 rtEmpty:'시간과 부위를 고르고 루틴을 만들어 보세요.',est:'예상 {e}분',estOf:'/ {m}분 (워밍업 5분 포함)',cEx:'운동',cS:'세트',cR:'횟수',cRest:'휴식',go:'이 루틴으로 운동 시작 ▶',pickP:'부위를 골라 주세요',wipeQ:'모든 기록을 삭제할까요?',
-bars:{std:'올림픽 20',w:'여성 15',b10:'10',ez:'EZ바 7',cus:'직접 입력'}},
+bars:{std:'올림픽',w:'여성',b10:'',ez:'EZ',cus:'직접 입력'}},
 en:{
 title:'오늘 몇 kg <small style="font-size:13px;color:#c6ff3d">Today\'s Lift</small>',ex:'Exercise',weight:'Weight',addSet:'+ Set',rest:'⏱ Start rest',save:'Save workout',e1rm:'e1RM trend',epley:'(Epley: weight×(1+reps/30))',
 ruleH:'Suggestion rule (double progression)',rule1:'All sets hit the top of the rep range last time → upper body +{up} / lower body +{lo}, restart at the bottom of the range',rule2:'Otherwise same weight, +1 rep over your weakest set',rule3:'3+ reps short of the range bottom → drop ~10% and rebuild',
@@ -27,4 +27,4 @@ last:'Last {d}: {w} · {r} reps',noHist:'No logs yet.',hDate:'Date',hW:'Weight',
 side:'per side',none:'No plates',fx:'{t} = bar {b} + per side {s}',fxBar:'{t} = bar only ({b})',exactOk:'✅ Exact match',below:'⚠ Target is lighter than the bar ({b}). Just lift the bar.',notPos:'⚠ {t} isn\'t possible with these plates. Tap a nearby weight:',lowerB:'↓ lower {w}',higherB:'↑ higher {w}',pickT:'Enter a target weight and pick plates',
 done:'Done!',doneT:'⏰ Rest over!',notif:'Rest over! Next set 💪',s60:'60s',s90:'90s',s120:'2 min',s180:'3 min',min:'{n} min',
 rtEmpty:'Pick time and body parts, then build a routine.',est:'Est. {e} min',estOf:'/ {m} min (incl. 5-min warm-up)',cEx:'Exercise',cS:'Sets',cR:'Reps',cRest:'Rest',go:'Start workout with this routine ▶',pickP:'Pick at least one body part',wipeQ:'Delete all data?',
-bars:{std:'Standard 45',w:"Women's 35",ez:'EZ 25',cus:'Custom'}}};
+bars:{std:'Standard',w:"Women's",b10:'',ez:'EZ',cus:'Custom'}}};
