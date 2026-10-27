@@ -2,6 +2,10 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const st=JSON.parse(localStorage.getItem('gym')||'{}');st.log??=[];st.plates??={25:1,20:1,15:1,10:1,5:1,2.5:1,1.25:1};st.platesLb??={45:1,35:1,25:1,10:1,5:1,2.5:1};st.rest??={};st.custom??=[];st.notes??={};delete st.collar;st.barSel??='std';
 st.lang??=((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');st.unit??=(st.lang==='en'&&/^en-(us|lr|mm)/i.test(navigator.language||'')?'lb':'kg');
 const save=()=>localStorage.setItem('gym',JSON.stringify(st));
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// v11: 문장 단위로 줄바꿈 — 한 줄에 안 들어가는 문장은 통째로 다음 줄로
+const sent=x=>String(x).replace(/([’”'")])(?=[가-힣])/g,'$1\u2060').split('\n').map(l=>l.split(/(?<=[.!?。]|[요다]\.?)\s+(?=[^\s·])/u).map(p=>`<span class="sn">${esc(p)}</span>`).join(' ')).join('<br>');
+const SENT_KEYS=/^(g[A-Z]|tplNote$)/;
 const t=(k,p={})=>{let s=I18N[st.lang][k]??I18N.ko[k]??k;for(const x in p)s=s.split('{'+x+'}').join(p[x]);return s};
 const nm=n=>st.lang==='en'?(L.EN[n]||n):n;
 const U=()=>st.unit,UL=()=>st.unit==='lb'?'lb':'kg',W=v=>Math.round(v*100)/100+' '+UL();
@@ -10,7 +14,7 @@ function show(tab){$$('nav button').forEach(x=>x.classList.toggle('on',x.dataset
 $$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 const exDef=n=>{const e=L.EX.find(x=>x.n===n)||{n,min:8,max:12,t:'compound'};const c=st.custom.find(x=>x.n===n);return{...e,sets:3,...(c||{})}};
 function fillEx(sel){const v=sel.value;sel.innerHTML=L.EX.map(e=>`<option value="${e.n}">${nm(e.n)}</option>`).join('');if(v)sel.value=v}
-function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));$$('[data-h]').forEach(e=>e.innerHTML=t(e.dataset.h));
+function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEach(e=>SENT_KEYS.test(e.dataset.i)?e.innerHTML=sent(t(e.dataset.i)):e.textContent=t(e.dataset.i));$$('[data-h]').forEach(e=>e.innerHTML=t(e.dataset.h));
  document.title=st.lang==='en'?"오늘 몇 kg · Today's Lift":'오늘 몇 kg';$('#today').textContent=new Date().toLocaleDateString(st.lang==='en'?'en-US':'ko-KR',{month:'short',day:'numeric',weekday:'short'});
  $$('#langChips button').forEach(c=>c.classList.toggle('on',c.dataset.l===st.lang));$$('#unitChips button').forEach(c=>c.classList.toggle('on',c.dataset.u===st.unit));
  const lb=st.unit==='lb';$('#rules').innerHTML=`· ${t('rule1',{up:lb?'5 lb':'2.5kg',lo:lb?'10 lb':'5kg'})}<br>· ${t('rule2')}<br>· ${t('rule3')}`;
@@ -37,7 +41,7 @@ function renderLog(){const n=$('#exSel').value,ex=exDef(n),last=lastOf(n),s=L.su
  $('#bk').hidden=!L.backupDue(st,today());
  $$('#sets input').forEach(i=>i.oninput=()=>sess[i.dataset.k].reps=+i.value);$$('#sets [data-d]').forEach(b=>b.onclick=()=>{sess.splice(b.dataset.d,1);renderLog()});
  $$('#sets [data-r]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.r];o.reps=Math.max(0,(+o.reps||0)+ +b.dataset.v);renderLog()});
- const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="empty">${t('noHist2')}</p>`;chart(h);
+ const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="empty">${sent(t('noHist2'))}</p>`;chart(h);
  $$('#hist [data-e]').forEach(b=>b.onclick=()=>{editIdx=+b.dataset.e;const x=st.log[editIdx];$('#w').value=L.fmtW(x.weight,U());$('#dt').value=x.date;sess=x.sets.map(s=>({reps:s.reps,done:true}));renderLog();scrollTo(0,0)});
  $$('#hist [data-del]').forEach(b=>b.onclick=()=>{if(!confirm(t('delQ')))return;st.log.splice(+b.dataset.del,1);editIdx=null;save();sess=[];renderLog()})}
 function chart(h){const c=$('#chart'),g=c.getContext('2d');g.clearRect(0,0,600,300);g.fillStyle='#666';g.font='22px sans-serif';
@@ -111,7 +115,7 @@ function chips(){$('#minChips').innerHTML=[30,45,60].map(m=>`<button class="chip
  $$('#minChips .chip').forEach(b=>b.onclick=()=>{mins=+b.dataset.m;chips()});
  $$('#partChips .chip').forEach(b=>b.onclick=()=>{const p=b.dataset.p;parts=parts.includes(p)?parts.filter(x=>x!==p):[...parts,p];chips()})}
 const est=()=>Math.round(5+rt.reduce((a,i)=>a+i.sets*(45+i.rest),0)/60);
-function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="empty">${t('rtEmpty2')}</p>`;return}
+function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="empty">${sent(t('rtEmpty2'))}</p>`;return}
  $('#rtOut').innerHTML=`<b>${t('est',{e:est()})}</b> <span class="muted">${t('estOf',{m:mins})}</span><div class="ri muted"><div>${t('cEx')}</div><div>${t('cS')}</div><div>${t('cR')}<button class="q" data-q="rr">?</button></div><div>${t('cRest')}</div><div></div></div>`+
  rt.map((i,k)=>`<div class="ri"><div>${nm(i.n)}</div><input type="number" value="${i.sets}" data-k="${k}" data-f="sets"><input value="${i.min}-${i.max}" data-k="${k}" data-f="rr"><input type="number" value="${i.rest}" data-k="${k}" data-f="rest"><button class="chip" data-x="${k}">✕</button></div>`).join('')+
  `<div class="row"><select id="addEx">${L.EX.filter(e=>parts.includes(e.p)).map(e=>`<option value="${e.n}">${nm(e.n)}</option>`).join('')}</select><button class="btn s" id="addRt" style="flex:0">${t('add')}</button></div><button class="btn p" id="go">${t('go')}</button>`;
@@ -132,13 +136,13 @@ applyLang();save();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 
 // ---- v10 초보 안내: 용어 (?) · 추천 루틴 · 첫 실행 투어
-document.addEventListener('click',ev=>{const b=ev.target.closest('.q');if(!b)return;ev.preventDefault();ev.stopPropagation();$('#tipTx').textContent=t('q_'+b.dataset.q);$('#tip').hidden=false},true);
+document.addEventListener('click',ev=>{const b=ev.target.closest('.q');if(!b)return;ev.preventDefault();ev.stopPropagation();$('#tipTx').innerHTML=sent(t('q_'+b.dataset.q));$('#tip').hidden=false},true);
 $('#tipX').onclick=()=>$('#tip').hidden=true;
 var tplOn=null;
-function renderTpl(){$('#tpl').innerHTML=L.TPL.map(x=>`<button class="tpl ${tplOn===x.id?'on':''}" data-tp="${x.id}"><b>${t('t_'+x.id)}</b><small>${t('d_'+x.id)}</small></button>`).join('');
+function renderTpl(){$('#tpl').innerHTML=L.TPL.map(x=>`<button class="tpl ${tplOn===x.id?'on':''}" data-tp="${x.id}"><b>${t('t_'+x.id)}</b><small>${sent(t('d_'+x.id))}</small></button>`).join('');
  $$('#tpl [data-tp]').forEach(b=>b.onclick=()=>{const x=L.tpl(b.dataset.tp);tplOn=x.id;mins=x.mins;parts=[...x.parts];rt=x.items;chips();renderRt();renderTpl();toast(t('tplOk',{n:t('t_'+x.id)}));$('#rtOut').scrollIntoView({behavior:'smooth',block:'start'})})}
 var tStep=0;
-function tourShow(){$('#tDots').innerHTML=[0,1,2].map(i=>`<i class="${i===tStep?'on':''}"></i>`).join('');$('#tT').textContent=t('tourT'+(tStep+1));$('#tB').textContent=t('tourB'+(tStep+1));$('#tNext').textContent=t(tStep<2?'tourNext':'tourDone');$('#tour').hidden=false}
+function tourShow(){$('#tDots').innerHTML=[0,1,2].map(i=>`<i class="${i===tStep?'on':''}"></i>`).join('');$('#tT').textContent=t('tourT'+(tStep+1));$('#tB').innerHTML=sent(t('tourB'+(tStep+1)));$('#tNext').textContent=t(tStep<2?'tourNext':'tourDone');$('#tour').hidden=false}
 function tourEnd(){$('#tour').hidden=true;st.tourDone=1;save()}
 $('#tNext').onclick=()=>{if(tStep<2){tStep++;tourShow()}else tourEnd()};$('#tSkip').onclick=tourEnd;
 $('#tourAgain').onclick=()=>{$('#gearMenu').hidden=true;tStep=0;tourShow()};

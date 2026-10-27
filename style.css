@@ -83,3 +83,9 @@ nav button{min-height:64px}nav button.on i{font-weight:800}
 .tourc h3{margin:6px 0 8px;color:#c6ff3d}.tourc p{line-height:1.6;margin:0 0 14px}
 .dots{display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:#444}.dots i.on{background:#c6ff3d}
 [hidden]{display:none!important}
+/* v11: Korean-friendly line breaking */
+html,body{word-break:keep-all;overflow-wrap:anywhere;line-break:strict}
+h1,h2,h3,.guide,.tpl b,.tourc h3,label,button{text-wrap:balance}
+p,.tip p,.tourc p,.tpl small,small,.note,.rules{text-wrap:pretty}
+input,select,textarea,#tm{word-break:normal;overflow-wrap:normal}
+.sn{display:inline-block;max-width:100%}
