@@ -56,4 +56,33 @@ L.routine=(min,parts)=>{
     if(used+c<=budget){out.push({n:e.n,sets,min:e.min,max:e.max,rest,lower:!!e.lower});used+=c}}
   return{items:out,est:Math.round((used/60)+5)};
 };
+
+// ---- v9
+// 저장할 세트: 체크된 세트가 있으면 그것만, 하나도 없으면 전부(기존 동작 유지)
+L.doneSets=sess=>{const d=sess.filter(s=>s.done);return(d.length?d:sess).map(s=>({reps:+s.reps||0})).filter(s=>s.reps>0)};
+// PR: 같은 종목 이전 기록 대비 최고 무게 또는 최고 e1RM 갱신 (kg 기준)
+L.bestE=x=>Math.max(0,...x.sets.map(s=>L.e1rm(x.weight,s.reps)));
+L.pr=(log,entry)=>{const prev=log.filter(x=>x!==entry&&x.ex===entry.ex&&(x.date<entry.date||(x.date===entry.date&&log.indexOf(x)<log.indexOf(entry))));
+  if(!prev.length)return null;const mw=Math.max(...prev.map(x=>x.weight)),me=Math.max(...prev.map(L.bestE));
+  const w=entry.weight>mw+1e-9,e=L.bestE(entry)>me+1e-9;return w||e?{weight:w,e1rm:e}:null};
+// 날짜순 정렬(안정)
+L.sortLog=log=>log.map((x,i)=>[x,i]).sort((a,b)=>a[0].date<b[0].date?-1:a[0].date>b[0].date?1:a[1]-b[1]).map(a=>a[0]);
+// 백업 가져오기: 형식 검증 + 기존 기록과 병합(중복 제거). 실패 시 throw
+L.validEntry=x=>x&&typeof x.ex==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')&&+x.weight>=0&&Array.isArray(x.sets)&&x.sets.every(s=>s&&isFinite(+s.reps));
+L.importData=(cur,inc)=>{if(!inc||typeof inc!=='object'||!Array.isArray(inc.log))throw new Error('format');
+  const key=x=>[x.ex,x.date,x.weight,x.sets.map(s=>s.reps).join('/')].join('|'),seen=new Set(cur.log.map(key)),out={...cur,log:[...cur.log]};let added=0;
+  for(const x of inc.log){if(!L.validEntry(x))continue;const e={ex:x.ex,date:x.date,weight:+x.weight,sets:x.sets.map(s=>({reps:+s.reps}))};if(x.t)e.t=x.t;if(!seen.has(key(e))){seen.add(key(e));out.log.push(e);added++}}
+  out.log=L.sortLog(out.log);
+  for(const k of ['rest','notes'])if(inc[k]&&typeof inc[k]==='object')out[k]={...inc[k],...(cur[k]||{})};
+  if(Array.isArray(inc.custom))for(const c of inc.custom)if(c&&c.n&&!(out.custom||[]).some(y=>y.n===c.n))out.custom=[...(out.custom||[]),c];
+  return{state:out,added}};
+// CSV (엑셀용): 날짜,운동,무게(단위),세트,횟수
+L.toCSV=(log,u='kg',name=n=>n)=>{const q=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
+  const rows=[['date','exercise','weight_'+u,'set','reps']];log.forEach(x=>x.sets.forEach((s,i)=>rows.push([x.date,q(name(x.ex)),L.fmtW(x.weight,u),i+1,s.reps])));return rows.map(r=>r.join(',')).join('\n')};
+L.backupDue=(st,today)=>{if(!st.log||st.log.length<3)return false;if(!st.lastBackup)return true;return(new Date(today)-new Date(st.lastBackup))/864e5>=14};
+// 워밍업: 목표의 40/60/80% (원판 단위로 반올림, 바 이상), 횟수 8/5/3. 목표가 바의 2배 미만이면 짧게
+L.warmup=(target,bar,u='kg')=>{const step=u==='lb'?5:2.5;if(!(target>bar))return[];const out=[{w:bar,reps:10}];
+  for(const [p,r] of [[.4,8],[.6,5],[.8,3]]){const w=Math.max(bar,L.rnd(target*p,step));if(w>out[out.length-1].w&&w<target)out.push({w,reps:r})}return out};
+// 남은 휴식 초 (종료 시각 기준 → 화면이 잠겨도 정확)
+L.left=(end,now)=>Math.max(0,Math.ceil((end-now)/1000));
 if(typeof module!=='undefined')module.exports=L;

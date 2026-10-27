@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const st=JSON.parse(localStorage.getItem('gym')||'{}');st.log??=[];st.plates??={25:1,20:1,15:1,10:1,5:1,2.5:1,1.25:1};st.platesLb??={45:1,35:1,25:1,10:1,5:1,2.5:1};st.rest??={};st.custom??=[];delete st.collar;st.barSel??='std';
+const st=JSON.parse(localStorage.getItem('gym')||'{}');st.log??=[];st.plates??={25:1,20:1,15:1,10:1,5:1,2.5:1,1.25:1};st.platesLb??={45:1,35:1,25:1,10:1,5:1,2.5:1};st.rest??={};st.custom??=[];st.notes??={};delete st.collar;st.barSel??='std';
 st.lang??=((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');st.unit??=(st.lang==='en'&&/^en-(us|lr|mm)/i.test(navigator.language||'')?'lb':'kg');
 const save=()=>localStorage.setItem('gym',JSON.stringify(st));
 const t=(k,p={})=>{let s=I18N[st.lang][k]??I18N.ko[k]??k;for(const x in p)s=s.split('{'+x+'}').join(p[x]);return s};
@@ -21,24 +21,39 @@ $$('#unitChips button').forEach(c=>c.onclick=()=>{const nu=c.dataset.u;if(nu===s
  const conv=v=>{const kg=L.toKg(+v,st.unit);return Math.round(L.toU(kg,nu)*2)/2};
  const pt=$('#pt').value,npt=pt?L.rnd(+conv(pt),nu==='lb'?5:2.5):'';st.unit=nu;$('#pt').value=npt;st.barSel='std';$('#pb').value=nu==='lb'?45:20;sess=[];save();applyLang()});
 // ---- 1 기록
-let sess=[];
-const lastOf=n=>st.log.filter(x=>x.ex===n).slice(-1)[0];
+let sess=[],editIdx=null;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let toastT;const toast=m=>{const e=$('#toast');e.textContent=m;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)};
+const lastOf=n=>st.log.filter((x,i)=>x.ex===n&&i!==editIdx).slice(-1)[0];
 const best=x=>Math.max(...x.sets.map(s=>L.e1rm(L.toU(x.weight,U()),s.reps)));
 function renderLog(){const n=$('#exSel').value,ex=exDef(n),last=lastOf(n),s=L.suggest(ex,last,U());
  const why=s.code==='first'?t('first',{n:ex.min}):s.code==='up'?t('up',{max:ex.max,min:ex.min,inc:s.inc+' '+UL()}):s.code==='down'?t('down'):t('reps',{m:s.minR});
  $('#sug').innerHTML=`<div class="muted">${t('todayT',{a:ex.min,b:ex.max})}</div><div class="big">${s.weight==null?'—':W(s.weight)} × ${t('xReps',{n:s.reps})} × ${t('xSets',{n:s.sets})}</div><div class="muted">${why}</div>`+(last?`<div class="muted">${t('last',{d:last.date,w:L.fmtW(last.weight,U())+' '+UL(),r:last.sets.map(x=>x.reps).join('/')})}</div>`:'');
  if(!sess.length){$('#w').value=s.weight??'';sess=Array.from({length:s.sets},()=>({reps:s.reps}))}
- $('#sets').innerHTML=`<div class="setrow muted" style="margin:10px 0 0;font-size:12px"><div>${t('cSet')}</div><div></div><div class="ctr">${t('cR')}</div><div></div><div></div></div>`+sess.map((x,i)=>`<div class="setrow"><div class="n">${i+1}</div><button class="sb" data-r="${i}" data-v="-1" aria-label="-">−</button><input type="number" inputmode="numeric" value="${x.reps}" data-k="${i}" aria-label="${t('setN',{n:i+1})}"><button class="sb" data-r="${i}" data-v="1" aria-label="+">+</button><button class="x" data-d="${i}" aria-label="delete">✕</button></div>`).join('');
+ $('#sets').innerHTML=`<div class="setrow muted" style="margin:10px 0 0;font-size:12px"><div>${t('cSet')}</div><div></div><div class="ctr">${t('cR')}</div><div></div><div></div></div>`+sess.map((x,i)=>{const g=last&&last.sets[i]?`${t('lastT')} ${last.sets[i].reps}`:'';return`<div class="setrow${x.done?' done':''}"><button class="n${x.done?' on':''}" data-c="${i}" aria-pressed="${!!x.done}" aria-label="${t('setN',{n:i+1})} ✓">${x.done?'✓':i+1}</button><button class="sb" data-r="${i}" data-v="-1" aria-label="-">−</button><div class="rc"><input type="number" inputmode="numeric" value="${x.reps}" data-k="${i}" aria-label="${t('setN',{n:i+1})}"><span class="gh">${g}</span></div><button class="sb" data-r="${i}" data-v="1" aria-label="+">+</button><button class="x" data-d="${i}" aria-label="delete">✕</button></div>`}).join('');
+ $$('#sets [data-c]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.c];o.done=!o.done;if(o.done)restAuto();renderLog()});
+ $('#note').value=st.notes[n]||'';if(!$('#dt').value)$('#dt').value=today();
+ $('#edBar').hidden=editIdx==null;if(editIdx!=null)$('#edTxt').textContent=t('editing',{d:st.log[editIdx].date});$('#save').textContent=t(editIdx==null?'save':'upd');
+ $('#bk').hidden=!L.backupDue(st,today());
  $$('#sets input').forEach(i=>i.oninput=()=>sess[i.dataset.k].reps=+i.value);$$('#sets [data-d]').forEach(b=>b.onclick=()=>{sess.splice(b.dataset.d,1);renderLog()});
  $$('#sets [data-r]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.r];o.reps=Math.max(0,(+o.reps||0)+ +b.dataset.v);renderLog()});
- const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th></tr>${h.slice(-8).reverse().map(x=>`<tr><td>${x.date}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td></tr>`).join('')}</table>`:`<p class="muted">${t('noHist')}</p>`;chart(h)}
+ const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="muted">${t('noHist')}</p>`;chart(h);
+ $$('#hist [data-e]').forEach(b=>b.onclick=()=>{editIdx=+b.dataset.e;const x=st.log[editIdx];$('#w').value=L.fmtW(x.weight,U());$('#dt').value=x.date;sess=x.sets.map(s=>({reps:s.reps,done:true}));renderLog();scrollTo(0,0)});
+ $$('#hist [data-del]').forEach(b=>b.onclick=()=>{if(!confirm(t('delQ')))return;st.log.splice(+b.dataset.del,1);editIdx=null;save();sess=[];renderLog()})}
 function chart(h){const c=$('#chart'),g=c.getContext('2d');g.clearRect(0,0,600,300);g.fillStyle='#666';g.font='22px sans-serif';
  if(h.length<2){g.fillText(t('chart2'),90,150);return}
  const v=h.map(x=>Math.round(best(x)*10)/10),mn=Math.min(...v)*.95,mx=Math.max(...v)*1.05,X=i=>40+i*(540/(v.length-1)),Y=y=>270-(y-mn)/(mx-mn||1)*240;
  g.strokeStyle='#c6ff3d';g.lineWidth=4;g.beginPath();v.forEach((y,i)=>i?g.lineTo(X(i),Y(y)):g.moveTo(X(i),Y(y)));g.stroke();
  g.fillStyle='#c6ff3d';v.forEach((y,i)=>{g.beginPath();g.arc(X(i),Y(y),6,0,7);g.fill()});g.fillStyle='#aaa';g.fillText(W(v[v.length-1]),X(v.length-1)-100,Y(v[v.length-1])-14)}
-$('#exSel').onchange=()=>{sess=[];renderLog()};$('#addSet').onclick=()=>{sess.push({reps:sess.length?sess[sess.length-1].reps:8});renderLog()};
-$('#save').onclick=()=>{const w=+$('#w').value;if(!w||!sess.length)return alert(t('needW'));st.log.push({ex:$('#exSel').value,date:new Date().toISOString().slice(0,10),weight:Math.round(L.toKg(w,U())*10000)/10000,sets:sess.map(s=>({reps:+s.reps}))});save();sess=[];
+const endEdit=()=>{editIdx=null;sess=[];$('#dt').value=today()};$('#edCancel').onclick=()=>{endEdit();renderLog()};
+$('#exSel').onchange=()=>{endEdit();renderLog()};$('#note').oninput=()=>{const v=$('#note').value.trim();if(v)st.notes[$('#exSel').value]=v;else delete st.notes[$('#exSel').value];save()};
+$('#allDone').onclick=()=>{const any=sess.some(s=>!s.done);sess.forEach(s=>s.done=any);renderLog()};
+$('#same').onclick=()=>{const l=lastOf($('#exSel').value);if(!l)return toast(t('noHist'));$('#w').value=L.fmtW(l.weight,U());sess=l.sets.map(s=>({reps:s.reps}));renderLog()};$('#addSet').onclick=()=>{sess.push({reps:sess.length?sess[sess.length-1].reps:8});renderLog()};
+$('#save').onclick=()=>{const w=+$('#w').value,sets=L.doneSets(sess);if(!w||!sets.length)return alert(t('needW'));
+ const e={ex:$('#exSel').value,date:$('#dt').value||today(),weight:Math.round(L.toKg(w,U())*10000)/10000,sets};const was=editIdx;
+ if(was!=null)st.log[was]=e;else st.log.push(e);st.log=L.sortLog(st.log);save();
+ if(was==null){const p=L.pr(st.log,e);if(p){toast(t('pr',{k:[p.weight&&t('prW'),p.e1rm&&t('prE')].filter(Boolean).join(' · ')}));navigator.vibrate?.(120)}}
+ endEdit();if(was!=null){renderLog();return}
  const q=st.queue||[],i=q.indexOf($('#exSel').value);if(i>=0&&q[i+1])$('#exSel').value=q[i+1];renderLog()};
 $('#restBtn').onclick=()=>{$('#rEx').value=$('#exSel').value;loadRest();show('t-rest');startT()};
 // ---- 2 원판 (표시 단위로 계산)
@@ -53,7 +68,7 @@ function renderPlate(){quick();const ps=plateSet(),ks=Object.keys(ps).map(Number
  $('#plChips').innerHTML=ks.map(k=>`<button class="chip ${ps[k]?'on':''}" data-p="${k}">${k} ${UL()}</button>`).join('');
  $$('#plChips .chip').forEach(b=>b.onclick=()=>{ps[b.dataset.p]=ps[b.dataset.p]?0:1;save();renderPlate()});
  const tg=+$('#pt').value,bar=+$('#pb').value||0,av=ks.filter(k=>ps[k]);
- if(!tg||!av.length){$('#pres').textContent=t('pickT');$('#barViz').innerHTML='';return}
+ if(!tg||!av.length){$('#pres').textContent=t('pickT');$('#barViz').innerHTML='';$('#wu').innerHTML=`<p class="muted">${t('wuEmpty')}</p>`;return}
  const r=L.plates(tg,bar,av),n=v=>Math.round(v*100)/100;
  const line=x=>x.side.length?t('fx',{t:W(x.total),b:n(bar),s:x.side.join(', ')}):t('fxBar',{t:W(x.total),b:n(bar)});
  let html='';
@@ -62,7 +77,8 @@ function renderPlate(){quick();const ps=plateSet(),ks=Object.keys(ps).map(Number
  else html=`<div style="color:#ffb224">${t('notPos',{t:W(tg)})}</div><div class="chips" style="margin-top:8px">${r.lower?`<button class="chip" data-go="${r.lower.total}">${t('lowerB',{w:W(r.lower.total)})}</button>`:''}${r.higher?`<button class="chip" data-go="${r.higher.total}">${t('higherB',{w:W(r.higher.total)})}</button>`:''}</div><div class="fx muted" style="margin-top:8px">${line(r)}</div>`;
  $('#pres').innerHTML=html;$$('#pres [data-go]').forEach(b=>b.onclick=()=>{$('#pt').value=b.dataset.go;renderPlate()});
  const max=Math.max(...ks),pv=p=>`<div class="pl" style="background:${(U()==='lb'?COLB:COL)[p]||'#9b8afb'};height:${50+p/max*90}px;width:${p/max>=.4?22:14}px">${p}</div>`;
- $('#barViz').innerHTML=[...r.side].reverse().map(pv).join('')+'<div class="sleeve"></div><div class="shaft"></div><div class="sleeve"></div>'+r.side.map(pv).join('')}
+ $('#barViz').innerHTML=[...r.side].reverse().map(pv).join('')+'<div class="sleeve"></div><div class="shaft"></div><div class="sleeve"></div>'+r.side.map(pv).join('');renderWu(tg,bar,av)}
+function renderWu(tg,bar,av){const w=L.warmup(tg,bar,U());$('#wu').innerHTML=w.length?w.map(x=>{const r=L.plates(x.w,bar,av);return`<div class="wu"><b>${W(r.total)} × ${x.reps}</b><span class="muted">${r.side.length?r.side.join(' + '):t('bar')}</span></div>`}).join('')+`<div class="wu"><b>${W(tg)}</b><span class="muted">→</span></div>`:`<p class="muted">${t('wuEmpty')}</p>`}
 ['#pt','#pb'].forEach(s=>$(s).oninput=renderPlate);
 $('#addPl').onclick=()=>{const v=+$('#newPl').value;if(v>0){plateSet()[v]=1;save();$('#newPl').value='';renderPlate()}};
 $$('[data-st]').forEach(b=>b.onclick=()=>{const i=$('#'+b.dataset.st),inc=U()==='lb'?5:2.5,v=Math.max(0,Math.round(((+i.value||0)+ +b.dataset.d*inc)*100)/100);i.value=v;i.dispatchEvent(new Event('input'))});
@@ -75,14 +91,18 @@ function loadRest(){const n=$('#rEx').value;$('#rSec').value=st.rest[n]??L.restD
 $('#rEx').onchange=loadRest;$('#rSec').oninput=()=>{st.rest[$('#rEx').value]=+$('#rSec').value;save();if(!end)$('#tm').textContent=fmt(+$('#rSec').value)};
 $$('#t-rest [data-s]').forEach(b=>b.onclick=()=>{$('#rSec').value=b.dataset.s;$('#rSec').oninput()});
 function beep(){try{ac??=new AudioContext();[0,.35,.7].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.4,ac.currentTime+d);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.25)})}catch(e){}}
-function startT(){try{ac??=new AudioContext();ac.resume()}catch(e){}end=Date.now()+(+$('#rSec').value)*1000;localStorage.setItem('gymEnd',end);$('#tm').classList.remove('done');clearInterval(tick);tick=setInterval(upd,250);upd()}
-function upd(){if(!end)return;const left=Math.max(0,Math.ceil((end-Date.now())/1000));$('#tm').textContent=fmt(left);document.title=left?fmt(left)+' · 오늘 몇 kg':t('doneT');
- if(!left){clearInterval(tick);end=0;localStorage.removeItem('gymEnd');$('#tm').classList.add('done');$('#tm').textContent=t('done');navigator.vibrate?.([400,200,400,200,400]);beep();
+let wl=null;const lockOn=async()=>{try{wl=await navigator.wakeLock?.request('screen')}catch(e){}},lockOff=()=>{try{wl?.release()}catch(e){}wl=null};
+function restAuto(){$('#rEx').value=$('#exSel').value;loadRest();startT()}
+function mini(left){const m=$('#mini');m.hidden=!end;if(end)m.textContent=`⏱ ${t('restLeft')} ${fmt(left)} · ${nm($('#rEx').value)}`}
+function startT(){try{ac??=new AudioContext();ac.resume()}catch(e){}lockOn();end=Date.now()+(+$('#rSec').value)*1000;localStorage.setItem('gymEnd',end);$('#tm').classList.remove('done');clearInterval(tick);tick=setInterval(upd,250);upd()}
+function upd(){if(!end){mini(0);return}const left=L.left(end,Date.now());$('#tm').textContent=fmt(left);mini(left);document.title=left?fmt(left)+' · 오늘 몇 kg':t('doneT');
+ if(!left){clearInterval(tick);end=0;mini(0);lockOff();toast(t('done'));localStorage.removeItem('gymEnd');$('#tm').classList.add('done');$('#tm').textContent=t('done');navigator.vibrate?.([400,200,400,200,400]);beep();
   if(window.Notification&&Notification.permission==='granted'&&document.hidden)new Notification(t('notif'))}}
 $('#tStart').onclick=()=>{if(window.Notification&&Notification.permission==='default')Notification.requestPermission();startT()};
 const bump=d=>{if(end){end+=d*1000;localStorage.setItem('gymEnd',end);upd()}else{$('#rSec').value=Math.max(5,+$('#rSec').value+d);$('#rSec').oninput()}};$('#tPlus').onclick=()=>bump(15);$('#tMinus').onclick=()=>bump(-15);
-$('#tStop').onclick=()=>{clearInterval(tick);end=0;localStorage.removeItem('gymEnd');document.title='오늘 몇 kg';loadRest()};
-document.addEventListener('visibilitychange',upd);
+$('#mini').onclick=()=>show('t-rest');
+$('#tStop').onclick=()=>{clearInterval(tick);end=0;mini(0);lockOff();localStorage.removeItem('gymEnd');document.title='오늘 몇 kg';loadRest()};
+document.addEventListener('visibilitychange',()=>{upd();if(end&&!document.hidden)lockOn()});
 {const e=+localStorage.getItem('gymEnd');if(e>Date.now()){end=e;tick=setInterval(upd,250)}}
 // ---- 4 루틴
 let mins=st.mins||45,parts=st.parts||['가슴','전면 삼각근'],rt=null;
@@ -100,7 +120,11 @@ function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="muted">${t('rtEmpty
  $('#addRt').onclick=()=>{const e=L.EX.find(x=>x.n===$('#addEx').value);rt.push({n:e.n,sets:3,min:e.min,max:e.max,rest:L.restDefault(e.t),lower:!!e.lower});renderRt()};
  $('#go').onclick=()=>{rt.forEach(i=>{st.custom=st.custom.filter(c=>c.n!==i.n);st.custom.push({n:i.n,sets:i.sets,min:i.min,max:i.max});st.rest[i.n]=i.rest});st.queue=rt.map(i=>i.n);save();$('#exSel').value=rt[0].n;sess=[];renderLog();show('t-log')}}
 $('#gen').onclick=()=>{if(!parts.length)return alert(t('pickP'));st.mins=mins;st.parts=parts;save();rt=L.routine(mins,parts).items;renderRt()};
-$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(st,null,1)],{type:'application/json'}));a.download='gym-backup.json';a.click()};
+$('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(st,null,1)],{type:'application/json'}));a.download='gym-backup-'+today()+'.json';a.click();st.lastBackup=today();save();renderLog()};
+$('#bkNow').onclick=()=>$('#exp').click();
+$('#csv').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.toCSV(st.log,U(),nm)],{type:'text/csv'}));a.download='gym-'+today()+'.csv';a.click()};
+$('#imp').onclick=()=>$('#impF').click();
+$('#impF').onchange=async()=>{const f=$('#impF').files[0];if(!f)return;try{const r=L.importData(st,JSON.parse(await f.text()));Object.assign(st,r.state);save();sess=[];applyLang();toast(t('impOk',{n:r.added}))}catch(e){alert(t('impBad'))}$('#impF').value=''};
 $('#wipe').onclick=()=>{if(confirm(t('wipeQ'))){localStorage.removeItem('gym');location.reload()}};
 $('#gearBtn').onclick=e=>{e.stopPropagation();$('#gearMenu').hidden=!$('#gearMenu').hidden};
 document.addEventListener('click',e=>{if(!$('#gearMenu').hidden&&!e.target.closest('#gearMenu'))$('#gearMenu').hidden=true});

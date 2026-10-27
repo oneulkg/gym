@@ -1,4 +1,9 @@
 const I18N={ko:{
+lastT:'지난',same:'↺ 지난번대로',allDone:'✓ 모두 완료',doneHint:'세트 번호를 누르면 완료 ✓ + 휴식 자동 시작. 저장 시 체크한 세트만 기록',
+note:'메모 (기구 세팅·자세 등)',notePh:'예: 시트 4칸, 그립 좁게',dateL:'날짜',pr:'🏆 신기록! {k}',prW:'최고 무게',prE:'최고 e1RM',
+edit:'수정',del:'삭제',delQ:'이 기록을 삭제할까요?',editing:'✏ {d} 기록 수정 중',cancel:'취소',upd:'수정 저장',
+imp:'백업 가져오기',csv:'CSV 내보내기',impOk:'{n}개 기록을 가져왔어요',impBad:'백업 파일을 읽을 수 없어요',bkDue:'💾 기록은 이 폰에만 있어요. 백업해 두세요',bkNow:'지금 백업',
+wu:'워밍업 세트',wuNote:'목표 무게 기준 바 → 40 → 60 → 80%',wuEmpty:'목표가 바보다 무거우면 워밍업이 나와요',restLeft:'휴식',
 title:'오늘 <b>몇 kg</b>',ex:'운동',weight:'무게',addSet:'+ 세트',rest:'⏱ 휴식 시작',save:'기록 저장',e1rm:'e1RM 추이',epley:'(Epley: 무게×(1+횟수/30))',
 ruleH:'추천 규칙(이중 점진 과부하)',rule1:'지난번 모든 세트가 목표 범위 상단 달성 → 상체 +{up} / 하체 +{lo}, 횟수는 하단부터',rule2:'아니면 같은 무게로 가장 적었던 세트보다 +1회',rule3:'하단보다 3회 이상 부족 → 약 10% 낮춰 다시',
 target:'원하는 무게',bar:'바 무게',customBar:'바 무게 직접 입력',plates:'보유 원판 (탭해서 켜기/끄기)',addPl:'원판 추가',add:'추가',
@@ -14,6 +19,11 @@ done:'끝!',doneT:'⏰ 휴식 끝!',notif:'휴식 끝! 다음 세트 가요 💪
 rtEmpty:'시간과 부위를 고르고 루틴을 만들어 보세요.',est:'예상 {e}분',estOf:'/ {m}분 (워밍업 5분 포함)',cEx:'운동',cS:'세트',cR:'횟수',cRest:'휴식',go:'이 루틴으로 운동 시작 ▶',pickP:'부위를 골라 주세요',wipeQ:'모든 기록을 삭제할까요?',
 hLog:'오늘 운동 기록',hPlate:'원판 계산기',hRest:'휴식 타이머',hRt:'루틴 만들기',rSetH:'기본 휴식 설정',cSet:'세트',bars:{std:'올림픽',w:'여성',b10:'',ez:'EZ',cus:'직접 입력'}},
 en:{
+lastT:'last',same:'↺ Same as last',allDone:'✓ All done',doneHint:'Tap a set number to mark done ✓ and auto-start rest. Only checked sets are saved',
+note:'Note (machine setup, cues)',notePh:'e.g. seat 4, narrow grip',dateL:'Date',pr:'🏆 New PR! {k}',prW:'heaviest weight',prE:'best e1RM',
+edit:'Edit',del:'Delete',delQ:'Delete this entry?',editing:'✏ Editing {d}',cancel:'Cancel',upd:'Save changes',
+imp:'Import backup',csv:'Export CSV',impOk:'Imported {n} entries',impBad:"Couldn't read that backup file",bkDue:'💾 Your log lives only on this phone. Back it up',bkNow:'Back up now',
+wu:'Warm-up sets',wuNote:'Bar → 40 → 60 → 80% of target',wuEmpty:'Warm-ups appear when the target is above the bar',restLeft:'Rest',
 title:'오늘 몇 kg <small style="font-size:13px;color:#c6ff3d">Today\'s Lift</small>',ex:'Exercise',weight:'Weight',addSet:'+ Set',rest:'⏱ Start rest',save:'Save workout',e1rm:'e1RM trend',epley:'(Epley: weight×(1+reps/30))',
 ruleH:'Suggestion rule (double progression)',rule1:'All sets hit the top of the rep range last time → upper body +{up} / lower body +{lo}, restart at the bottom of the range',rule2:'Otherwise same weight, +1 rep over your weakest set',rule3:'3+ reps short of the range bottom → drop ~10% and rebuild',
 target:'Target weight',bar:'Bar weight',customBar:'Custom bar weight',plates:'Available plates (tap to toggle)',addPl:'Add plate',add:'Add',

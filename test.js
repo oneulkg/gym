@@ -44,4 +44,29 @@ global.I18N=undefined;eval(require('fs').readFileSync(__dirname+'/i18n.js','utf8
 const miss=Object.keys(I18N.ko).filter(k=>!(k in I18N.en)&&k!=='bars');eq('EN 키 누락 없음',miss,[]);
 eq('EN 운동명 전부',L.EX.filter(e=>!L.EN[e.n]).map(e=>e.n),[]);eq('EN 부위명 전부',L.PARTS.filter(p=>!L.EN[p]),[]);
 eq('EN 문구 치환',I18N.en.up.replace('{max}',12).replace('{inc}','5 lb').replace('{min}',8),'Hit 12 reps on all sets last time → +5 lb, start at 8 reps');
+
+// ---- v9
+eq('doneSets: 체크한 것만',L.doneSets([{reps:10,done:true},{reps:8},{reps:9,done:true}]),[{reps:10},{reps:9}]);
+eq('doneSets: 체크 없음→전부(호환)',L.doneSets([{reps:10},{reps:8}]),[{reps:10},{reps:8}]);
+eq('doneSets: 0회 제외',L.doneSets([{reps:0},{reps:5}]),[{reps:5}]);
+{const a={ex:'벤치프레스',date:'2026-10-01',weight:60,sets:[{reps:10}]},b={ex:'벤치프레스',date:'2026-10-03',weight:62.5,sets:[{reps:8}]},c={ex:'벤치프레스',date:'2026-10-05',weight:60,sets:[{reps:8}]},d={ex:'벤치프레스',date:'2026-10-07',weight:60,sets:[{reps:14}]};const lg=[a,b,c,d];
+eq('PR 첫 기록 아님',L.pr(lg,a),null);eq('PR 무게(e1RM은 미달)',L.pr(lg,b),{weight:true,e1rm:false});eq('PR 아님',L.pr(lg,c),null);eq('PR e1RM만',L.pr(lg,d),{weight:false,e1rm:true});}
+eq('sortLog 날짜순·안정',L.sortLog([{date:'2026-10-02',i:1},{date:'2026-10-01',i:2},{date:'2026-10-02',i:3}]).map(x=>x.i),[2,1,3]);
+{const cur={log:[{ex:'스쿼트',date:'2026-10-01',weight:100,sets:[{reps:5}]}],rest:{'스쿼트':180},custom:[]};
+ const inc={log:[{ex:'스쿼트',date:'2026-10-01',weight:100,sets:[{reps:5}]},{ex:'스쿼트',date:'2026-09-20',weight:95,sets:[{reps:5}]},{ex:'x',date:'bad',weight:1,sets:[]}],rest:{'스쿼트':120,'딥스':90},notes:{'딥스':'n'}};
+ const r=L.importData(cur,inc);eq('import 중복제거·검증',r.added,1);eq('import 정렬',r.state.log.map(x=>x.date),['2026-09-20','2026-10-01']);eq('import 기존 설정 우선',[r.state.rest['스쿼트'],r.state.rest['딥스'],r.state.notes['딥스']],[180,90,'n']);
+ let th=0;try{L.importData(cur,{foo:1})}catch(e){th=1}eq('import 잘못된 파일 거부',th,1);
+ eq('import 후 원본 불변',cur.log.length,1);}
+eq('CSV',L.toCSV([{ex:'a,b',date:'2026-10-01',weight:100,sets:[{reps:5},{reps:4}]}],'kg'),'date,exercise,weight_kg,set,reps\n2026-10-01,"a,b",100,1,5\n2026-10-01,"a,b",100,2,4');
+eq('CSV lb',L.toCSV([{ex:'a',date:'2026-10-01',weight:100,sets:[{reps:5}]}],'lb').split('\n')[1],'2026-10-01,a,220.5,1,5');
+eq('backupDue 적은 기록',L.backupDue({log:[1,2]},'2026-10-27'),false);
+eq('backupDue 백업없음',L.backupDue({log:[1,2,3]},'2026-10-27'),true);
+eq('backupDue 14일',[L.backupDue({log:[1,2,3],lastBackup:'2026-10-20'},'2026-10-27'),L.backupDue({log:[1,2,3],lastBackup:'2026-10-13'},'2026-10-27')],[false,true]);
+eq('warmup 100kg/20',L.warmup(100,20),[{w:20,reps:10},{w:40,reps:8},{w:60,reps:5},{w:80,reps:3}]);
+eq('warmup 225lb/45',L.warmup(225,45,'lb').map(x=>x.w),[45,90,135,180]);
+eq('warmup 가벼움 30/20',L.warmup(30,20).map(x=>x.w),[20,25]);
+eq('warmup 바 이하',L.warmup(20,20),[]);
+eq('left: 잠금 후에도 종료시각 기준',[L.left(10000,0),L.left(10000,9001),L.left(10000,20000)],[10,1,0]);
+eq('기존 기록 형식 호환(필드 추가 없음)',Object.keys(L.importData({log:[]},{log:[{ex:'a',date:'2026-01-01',weight:1,sets:[{reps:1}]}]}).state.log[0]),['ex','date','weight','sets']);
+for(const k of ['same','allDone','pr','imp','csv','wu','note','bkDue'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);
 console.log(`${ok} pass, ${f} fail`);process.exit(f?1:0);
