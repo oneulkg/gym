@@ -1,0 +1,39 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f"><title>오늘 몇 kg</title><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<header><h1>오늘 <b>몇 kg</b></h1><span class="muted" id="today"></span></header>
+<section id="t-log" class="on">
+ <div class="card"><label>운동</label><select id="exSel"></select>
+  <div id="sug" style="margin-top:12px"></div></div>
+ <div class="card"><div class="row"><div><label>무게(kg)</label><input id="w" type="number" inputmode="decimal" step="0.5"></div></div>
+  <div id="sets"></div><button class="btn s" id="addSet">+ 세트</button><button class="btn s" id="restBtn">⏱ 휴식 시작</button>
+  <button class="btn p" id="save">기록 저장</button></div>
+ <div class="card"><b>e1RM 추이</b> <span class="muted">(Epley: 무게×(1+횟수/30))</span><canvas id="chart" width="600" height="300"></canvas><div id="hist"></div></div>
+ <div class="card muted" style="font-size:13px"><b>추천 규칙(이중 점진 과부하)</b><br>· 지난번 모든 세트가 목표 범위 상단 달성 → 상체 +2.5kg / 하체 +5kg, 횟수는 하단부터<br>· 아니면 같은 무게로 가장 적었던 세트보다 +1회<br>· 하단보다 3회 이상 부족 → 약 10% 낮춰 다시</div>
+</section>
+<section id="t-plate">
+ <div class="card"><label>목표 무게(kg, 바 포함)</label><input id="pt" type="number" inputmode="decimal" value="60" step="0.5">
+ <label>바 무게</label><div class="chips" id="barChips"></div><input id="pb" type="number" inputmode="decimal" value="20" step="0.5" style="margin-top:8px">
+ <label>칼라(클립) 한쪽 무게</label><input id="pc" type="number" inputmode="decimal" value="0" step="0.5"></div>
+ <div class="card"><div id="pres"></div><div class="bar" id="barViz"></div></div>
+ <div class="card"><label>보유 원판 (탭해서 켜기/끄기)</label><div class="chips" id="plChips"></div>
+ <div class="row" style="margin-top:8px"><input id="newPl" type="number" inputmode="decimal" placeholder="원판 추가 (kg)"><button class="btn s" id="addPl" style="flex:0">추가</button></div></div>
+</section>
+<section id="t-rest">
+ <div class="card"><label>운동별 기본 휴식</label><select id="rEx"></select><div class="row"><div><label>휴식(초)</label><input id="rSec" type="number" inputmode="numeric"></div></div>
+ <div class="chips" style="margin-top:8px"><button class="chip" data-s="60">60초</button><button class="chip" data-s="90">90초</button><button class="chip" data-s="120">2분</button><button class="chip" data-s="180">3분</button></div>
+ <div class="timer" id="tm">0:00</div><button class="btn p" id="tStart" style="font-size:24px;min-height:80px">시작</button><button class="btn" id="tStop">정지</button>
+ <p class="muted">화면이 꺼져도 시간 기준으로 계산해서 돌아오면 정확해요. 화면이 꺼진 동안 소리·진동은 브라우저 제한으로 늦게 울릴 수 있어요.</p></div>
+</section>
+<section id="t-rt">
+ <div class="card"><label>오늘 쓸 수 있는 시간</label><div class="chips" id="minChips"></div><label>부위 (여러 개 선택)</label><div class="chips" id="partChips"></div>
+ <button class="btn p" id="gen">루틴 만들기</button></div>
+ <div class="card" id="rtOut"></div>
+</section>
+<section id="t-pro">
+ <div class="card pro"><h2 style="margin-top:0">PRO <span class="muted">(준비 중 · 결제 없음)</span></h2><ul>
+ <li>클라우드 백업·기기 간 동기화</li><li>주기화 프로그램(5/3/1, 디로드 주 자동)</li><li>부위별 주간 볼륨·정체 구간 알림</li><li>기록 CSV 내보내기</li><li>광고 제거</li></ul><p class="muted">현재 모든 기능은 무료예요.</p></div>
+ <div class="card"><b>데이터</b><p class="muted">기록은 이 기기 브라우저(localStorage)에만 저장돼요.</p><button class="btn" id="exp">기록 내보내기(JSON)</button><button class="btn" id="wipe">전체 기록 삭제</button></div>
+</section>
+<div class="ad" id="adSlot" style="margin:14px 16px">광고 영역 (예정)</div>
+<nav><button data-t="t-log" class="on"><span>📈</span>기록</button><button data-t="t-plate"><span>🏋️</span>원판</button><button data-t="t-rest"><span>⏱</span>휴식</button><button data-t="t-rt"><span>📋</span>루틴</button><button data-t="t-pro"><span>⭐</span>PRO</button></nav>
+<script src="logic.js"></script><script src="app.js"></script></body></html>
