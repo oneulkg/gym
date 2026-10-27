@@ -1,3 +1,4 @@
+const SHOW_PRO = false; // true로 바꾸면 PRO 탭/섹션 다시 표시
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const st=JSON.parse(localStorage.getItem('gym')||'{}');st.log??=[];st.plates??={25:1,20:1,15:1,10:1,5:1,2.5:1,1.25:1};st.platesLb??={45:1,35:1,25:1,10:1,5:1,2.5:1};st.rest??={};st.custom??=[];
 st.lang??=((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');st.unit??=(st.lang==='en'&&/^en-(us|lr|mm)/i.test(navigator.language||'')?'lb':'kg');
@@ -12,12 +13,12 @@ const exDef=n=>{const e=L.EX.find(x=>x.n===n)||{n,min:8,max:12,t:'compound'};con
 function fillEx(sel){const v=sel.value;sel.innerHTML=L.EX.map(e=>`<option value="${e.n}">${nm(e.n)}</option>`).join('');if(v)sel.value=v}
 function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));$$('[data-h]').forEach(e=>e.innerHTML=t(e.dataset.h));
  document.title=st.lang==='en'?"오늘 몇 kg · Today's Lift":'오늘 몇 kg';$('#today').textContent=new Date().toLocaleDateString(st.lang==='en'?'en-US':'ko-KR',{month:'short',day:'numeric',weekday:'short'});
- $$('#langChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.l===st.lang));$$('#unitChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.u===st.unit));
+ $$('#langChips button').forEach(c=>c.classList.toggle('on',c.dataset.l===st.lang));$$('#unitChips button').forEach(c=>c.classList.toggle('on',c.dataset.u===st.unit));
  const lb=st.unit==='lb';$('#rules').innerHTML=`<b>${t('ruleH')}</b><br>· ${t('rule1',{up:lb?'5 lb':'2.5kg',lo:lb?'10 lb':'5kg'})}<br>· ${t('rule2')}<br>· ${t('rule3')}`;
  $('#wLbl').textContent=`${t('weight')} (${UL()})`;$('#ptLbl').textContent=`${t('target')} (${UL()})`;$('#pcLbl').textContent=`${t('collar')} (${UL()})`;$('#newPl').placeholder=`${t('addPl')} (${UL()})`;
  fillEx($('#exSel'));fillEx($('#rEx'));renderLog();renderPlate();loadRest();chips();renderRt()}
-$$('#langChips .chip').forEach(c=>c.onclick=()=>{st.lang=c.dataset.l;save();applyLang()});
-$$('#unitChips .chip').forEach(c=>c.onclick=()=>{const nu=c.dataset.u;if(nu===st.unit)return;
+$$('#langChips button').forEach(c=>c.onclick=()=>{st.lang=c.dataset.l;save();applyLang()});
+$$('#unitChips button').forEach(c=>c.onclick=()=>{const nu=c.dataset.u;if(nu===st.unit)return;
  const conv=v=>{const kg=L.toKg(+v,st.unit);return Math.round(L.toU(kg,nu)*2)/2};
  const pt=$('#pt').value,pc=$('#pc').value;st.unit=nu;$('#pt').value=pt?L.rnd(+conv(pt),nu==='lb'?5:2.5):'';$('#pb').value=nu==='lb'?45:20;$('#pc').value=pc?conv(pc):0;sess=[];save();applyLang()});
 // ---- 1 기록
@@ -90,5 +91,9 @@ function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="muted">${t('rtEmpty
 $('#gen').onclick=()=>{if(!parts.length)return alert(t('pickP'));st.mins=mins;st.parts=parts;save();rt=L.routine(mins,parts).items;renderRt()};
 $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(st,null,1)],{type:'application/json'}));a.download='gym-backup.json';a.click()};
 $('#wipe').onclick=()=>{if(confirm(t('wipeQ'))){localStorage.removeItem('gym');location.reload()}};
+$('#gearBtn').onclick=e=>{e.stopPropagation();$('#gearMenu').hidden=!$('#gearMenu').hidden};
+document.addEventListener('click',e=>{if(!$('#gearMenu').hidden&&!e.target.closest('#gearMenu'))$('#gearMenu').hidden=true});
+if(!SHOW_PRO){$('#proTab').remove();$('#t-pro').remove()}
+document.getElementById('nav').style.gridTemplateColumns=`repeat(${SHOW_PRO?5:4},1fr)`;
 applyLang();save();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
