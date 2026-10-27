@@ -15,7 +15,7 @@ function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEac
  $$('#langChips button').forEach(c=>c.classList.toggle('on',c.dataset.l===st.lang));$$('#unitChips button').forEach(c=>c.classList.toggle('on',c.dataset.u===st.unit));
  const lb=st.unit==='lb';$('#rules').innerHTML=`· ${t('rule1',{up:lb?'5 lb':'2.5kg',lo:lb?'10 lb':'5kg'})}<br>· ${t('rule2')}<br>· ${t('rule3')}`;
  $('#wLbl').textContent=`${t('weight')} (${UL()})`;$('#ptLbl').textContent=`${t('target')} (${UL()})`;$('#pbLbl').textContent=`${t('customBar')} (${UL()})`;$('#newPl').placeholder=`${t('addPl')} (${UL()})`;
- fillEx($('#exSel'));fillEx($('#rEx'));renderLog();renderPlate();loadRest();chips();renderRt()}
+ fillEx($('#exSel'));fillEx($('#rEx'));renderLog();renderPlate();loadRest();chips();renderRt();renderTpl();if(!$('#tour').hidden)tourShow()}
 $$('#langChips button').forEach(c=>c.onclick=()=>{st.lang=c.dataset.l;save();applyLang()});
 $$('#unitChips button').forEach(c=>c.onclick=()=>{const nu=c.dataset.u;if(nu===st.unit)return;
  const conv=v=>{const kg=L.toKg(+v,st.unit);return Math.round(L.toU(kg,nu)*2)/2};
@@ -37,7 +37,7 @@ function renderLog(){const n=$('#exSel').value,ex=exDef(n),last=lastOf(n),s=L.su
  $('#bk').hidden=!L.backupDue(st,today());
  $$('#sets input').forEach(i=>i.oninput=()=>sess[i.dataset.k].reps=+i.value);$$('#sets [data-d]').forEach(b=>b.onclick=()=>{sess.splice(b.dataset.d,1);renderLog()});
  $$('#sets [data-r]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.r];o.reps=Math.max(0,(+o.reps||0)+ +b.dataset.v);renderLog()});
- const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="muted">${t('noHist')}</p>`;chart(h);
+ const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="empty">${t('noHist2')}</p>`;chart(h);
  $$('#hist [data-e]').forEach(b=>b.onclick=()=>{editIdx=+b.dataset.e;const x=st.log[editIdx];$('#w').value=L.fmtW(x.weight,U());$('#dt').value=x.date;sess=x.sets.map(s=>({reps:s.reps,done:true}));renderLog();scrollTo(0,0)});
  $$('#hist [data-del]').forEach(b=>b.onclick=()=>{if(!confirm(t('delQ')))return;st.log.splice(+b.dataset.del,1);editIdx=null;save();sess=[];renderLog()})}
 function chart(h){const c=$('#chart'),g=c.getContext('2d');g.clearRect(0,0,600,300);g.fillStyle='#666';g.font='22px sans-serif';
@@ -111,8 +111,8 @@ function chips(){$('#minChips').innerHTML=[30,45,60].map(m=>`<button class="chip
  $$('#minChips .chip').forEach(b=>b.onclick=()=>{mins=+b.dataset.m;chips()});
  $$('#partChips .chip').forEach(b=>b.onclick=()=>{const p=b.dataset.p;parts=parts.includes(p)?parts.filter(x=>x!==p):[...parts,p];chips()})}
 const est=()=>Math.round(5+rt.reduce((a,i)=>a+i.sets*(45+i.rest),0)/60);
-function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="muted">${t('rtEmpty')}</p>`;return}
- $('#rtOut').innerHTML=`<b>${t('est',{e:est()})}</b> <span class="muted">${t('estOf',{m:mins})}</span><div class="ri muted"><div>${t('cEx')}</div><div>${t('cS')}</div><div>${t('cR')}</div><div>${t('cRest')}</div><div></div></div>`+
+function renderRt(){if(!rt){$('#rtOut').innerHTML=`<p class="empty">${t('rtEmpty2')}</p>`;return}
+ $('#rtOut').innerHTML=`<b>${t('est',{e:est()})}</b> <span class="muted">${t('estOf',{m:mins})}</span><div class="ri muted"><div>${t('cEx')}</div><div>${t('cS')}</div><div>${t('cR')}<button class="q" data-q="rr">?</button></div><div>${t('cRest')}</div><div></div></div>`+
  rt.map((i,k)=>`<div class="ri"><div>${nm(i.n)}</div><input type="number" value="${i.sets}" data-k="${k}" data-f="sets"><input value="${i.min}-${i.max}" data-k="${k}" data-f="rr"><input type="number" value="${i.rest}" data-k="${k}" data-f="rest"><button class="chip" data-x="${k}">✕</button></div>`).join('')+
  `<div class="row"><select id="addEx">${L.EX.filter(e=>parts.includes(e.p)).map(e=>`<option value="${e.n}">${nm(e.n)}</option>`).join('')}</select><button class="btn s" id="addRt" style="flex:0">${t('add')}</button></div><button class="btn p" id="go">${t('go')}</button>`;
  $$('#rtOut input').forEach(i=>i.onchange=()=>{const o=rt[i.dataset.k];if(i.dataset.f==='rr'){const[a,b]=i.value.split('-').map(Number);if(a&&b){o.min=a;o.max=b}}else o[i.dataset.f]=+i.value;renderRt()});
@@ -130,3 +130,16 @@ $('#gearBtn').onclick=e=>{e.stopPropagation();$('#gearMenu').hidden=!$('#gearMen
 document.addEventListener('click',e=>{if(!$('#gearMenu').hidden&&!e.target.closest('#gearMenu'))$('#gearMenu').hidden=true});
 applyLang();save();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+
+// ---- v10 초보 안내: 용어 (?) · 추천 루틴 · 첫 실행 투어
+document.addEventListener('click',ev=>{const b=ev.target.closest('.q');if(!b)return;ev.preventDefault();ev.stopPropagation();$('#tipTx').textContent=t('q_'+b.dataset.q);$('#tip').hidden=false},true);
+$('#tipX').onclick=()=>$('#tip').hidden=true;
+var tplOn=null;
+function renderTpl(){$('#tpl').innerHTML=L.TPL.map(x=>`<button class="tpl ${tplOn===x.id?'on':''}" data-tp="${x.id}"><b>${t('t_'+x.id)}</b><small>${t('d_'+x.id)}</small></button>`).join('');
+ $$('#tpl [data-tp]').forEach(b=>b.onclick=()=>{const x=L.tpl(b.dataset.tp);tplOn=x.id;mins=x.mins;parts=[...x.parts];rt=x.items;chips();renderRt();renderTpl();toast(t('tplOk',{n:t('t_'+x.id)}));$('#rtOut').scrollIntoView({behavior:'smooth',block:'start'})})}
+var tStep=0;
+function tourShow(){$('#tDots').innerHTML=[0,1,2].map(i=>`<i class="${i===tStep?'on':''}"></i>`).join('');$('#tT').textContent=t('tourT'+(tStep+1));$('#tB').textContent=t('tourB'+(tStep+1));$('#tNext').textContent=t(tStep<2?'tourNext':'tourDone');$('#tour').hidden=false}
+function tourEnd(){$('#tour').hidden=true;st.tourDone=1;save()}
+$('#tNext').onclick=()=>{if(tStep<2){tStep++;tourShow()}else tourEnd()};$('#tSkip').onclick=tourEnd;
+$('#tourAgain').onclick=()=>{$('#gearMenu').hidden=true;tStep=0;tourShow()};
+renderTpl();if(!st.tourDone&&!st.log.length){tStep=0;tourShow()}

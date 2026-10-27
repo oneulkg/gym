@@ -86,3 +86,8 @@ L.warmup=(target,bar,u='kg')=>{const step=u==='lb'?5:2.5;if(!(target>bar))return
 // 남은 휴식 초 (종료 시각 기준 → 화면이 잠겨도 정확)
 L.left=(end,now)=>Math.max(0,Math.ceil((end-now)/1000));
 if(typeof module!=='undefined')module.exports=L;
+
+// ---- v10 초보 템플릿 (부위+시간 → 기존 L.routine 재사용)
+L.TPL=[{id:'full3',mins:45,parts:['하체','가슴','등']},{id:'upper',mins:50,parts:['가슴','등','측면 삼각근','팔']},{id:'lower',mins:45,parts:['하체','복근']},
+ {id:'push',mins:45,parts:['가슴','전면 삼각근','측면 삼각근','팔']},{id:'pull',mins:45,parts:['등','후면 삼각근','팔']}];
+L.tpl=id=>{const x=L.TPL.find(t=>t.id===id);return x?{...x,items:L.routine(x.mins,x.parts).items}:null};

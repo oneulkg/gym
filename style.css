@@ -69,3 +69,17 @@ nav button{min-height:64px}nav button.on i{font-weight:800}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:50;background:#c6ff3d;color:#0d0d0f;font-weight:800;padding:12px 18px;border-radius:14px;box-shadow:0 6px 24px #0008;max-width:90%;text-align:center}
 #hist td .ia{background:none;border:0;color:#999;font-size:15px;min-width:36px;min-height:36px}
 .wu{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #2a2a30;font-variant-numeric:tabular-nums}
+
+/* v10 초보 안내 */
+.guide{margin:-4px 0 12px;padding:10px 12px;border-radius:12px;background:#1a1f10;border:1px solid #3a4a14;color:#dfe9c8;font-size:13.5px;line-height:1.5}
+.q{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:6px;border-radius:50%;border:1px solid #555;background:#222;color:#c6ff3d;font-size:12px;font-weight:700;padding:0;vertical-align:middle;cursor:pointer}
+.tpl{display:block;width:100%;text-align:left;margin:8px 0 0;padding:12px;border-radius:12px;border:1px solid #333;background:#18181b;color:#eee}
+.tpl b{display:block;font-size:15px}.tpl small{color:#9a9a9a;font-size:12.5px}.tpl.on{border-color:#c6ff3d}
+.empty{white-space:pre-line;color:#aaa;line-height:1.6;font-size:13.5px}
+.tip{position:fixed;left:12px;right:12px;bottom:84px;z-index:60;padding:14px;border-radius:14px;background:#202024;border:1px solid #c6ff3d;box-shadow:0 8px 30px #000a;font-size:14px;line-height:1.55}
+.tip p{margin:0 0 10px}
+.tourbg{position:fixed;inset:0;z-index:70;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px}
+.tourc{background:#18181b;border:1px solid #333;border-radius:18px;padding:20px;max-width:360px;width:100%}
+.tourc h3{margin:6px 0 8px;color:#c6ff3d}.tourc p{line-height:1.6;margin:0 0 14px}
+.dots{display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:#444}.dots i.on{background:#c6ff3d}
+[hidden]{display:none!important}

@@ -69,4 +69,12 @@ eq('warmup 바 이하',L.warmup(20,20),[]);
 eq('left: 잠금 후에도 종료시각 기준',[L.left(10000,0),L.left(10000,9001),L.left(10000,20000)],[10,1,0]);
 eq('기존 기록 형식 호환(필드 추가 없음)',Object.keys(L.importData({log:[]},{log:[{ex:'a',date:'2026-01-01',weight:1,sets:[{reps:1}]}]}).state.log[0]),['ex','date','weight','sets']);
 for(const k of ['same','allDone','pr','imp','csv','wu','note','bkDue'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);
+// v10
+eq('템플릿 5개',L.TPL.length,5);
+for(const x of L.TPL){const r=L.tpl(x.id);eq('템플릿 '+x.id+' 운동 3개 이상',r.items.length>=3,true);eq('템플릿 '+x.id+' 시간 내',L.routine(x.mins,x.parts).est<=x.mins,true);eq('템플릿 '+x.id+' 부위만',r.items.every(i=>x.parts.includes(L.EX.find(e=>e.n===i.n).p)),true);
+ for(const k of ['t_','d_'])eq('i18n '+k+x.id,[!!I18N.ko[k+x.id],!!I18N.en[k+x.id]],[true,true])}
+eq('없는 템플릿',L.tpl('x'),null);
+eq('전신 템플릿: 하체·가슴·등 모두',['하체','가슴','등'].every(p=>L.tpl('full3').items.some(i=>L.EX.find(e=>e.n===i.n).p===p)),true);
+for(const k of ['gLog','gPlate','gRest','gRt','tplH','noHist2','rtEmpty2','q_e1rm','q_prog','q_deload','q_wu','q_rr','tourT1','tourB3','tourAgain'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);
+eq('ko/en 키 동일',Object.keys(I18N.ko).filter(k=>!(k in I18N.en)),[]);
 console.log(`${ok} pass, ${f} fail`);process.exit(f?1:0);
