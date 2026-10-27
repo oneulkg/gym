@@ -1,4 +1,3 @@
-const SHOW_PRO = false; // true로 바꾸면 PRO 탭/섹션 다시 표시
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const st=JSON.parse(localStorage.getItem('gym')||'{}');st.log??=[];st.plates??={25:1,20:1,15:1,10:1,5:1,2.5:1,1.25:1};st.platesLb??={45:1,35:1,25:1,10:1,5:1,2.5:1};st.rest??={};st.custom??=[];
 st.lang??=((navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en');st.unit??=(st.lang==='en'&&/^en-(us|lr|mm)/i.test(navigator.language||'')?'lb':'kg');
@@ -93,7 +92,5 @@ $('#exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObje
 $('#wipe').onclick=()=>{if(confirm(t('wipeQ'))){localStorage.removeItem('gym');location.reload()}};
 $('#gearBtn').onclick=e=>{e.stopPropagation();$('#gearMenu').hidden=!$('#gearMenu').hidden};
 document.addEventListener('click',e=>{if(!$('#gearMenu').hidden&&!e.target.closest('#gearMenu'))$('#gearMenu').hidden=true});
-if(!SHOW_PRO){$('#proTab').remove();$('#t-pro').remove()}
-document.getElementById('nav').style.gridTemplateColumns=`repeat(${SHOW_PRO?5:4},1fr)`;
 applyLang();save();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
