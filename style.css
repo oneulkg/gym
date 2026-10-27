@@ -21,3 +21,4 @@ table{width:100%;border-collapse:collapse;font-size:15px}td,th{padding:6px 4px;b
 .pro{background:linear-gradient(135deg,#232a12,#18181c)}.pro li{margin:6px 0}
 canvas{width:100%;height:180px}
 .ri{display:grid;grid-template-columns:1fr 54px 70px 64px 36px;gap:4px;align-items:center;margin:6px 0}.ri input{padding:8px;font-size:15px;min-height:42px}.ri div{font-size:14px}
+nav i{font-style:normal}

@@ -2,14 +2,20 @@
 const L={};
 L.e1rm=(w,r)=>r<=0?0:(r===1?w:Math.round(w*(1+r/30)*10)/10);
 // 이중 점진 과부하: 모든 세트가 상단 횟수 달성 -> 무게 증가(상체 2.5, 하체 5), 아니면 횟수 +1
-L.suggest=(ex,last)=>{
-  if(!last)return{weight:null,reps:ex.min,sets:ex.sets,why:'첫 기록이에요. 편하게 '+ex.min+'회 가능한 무게로 시작하세요.'};
-  const inc=ex.lower?5:2.5;
-  const all=last.sets.every(s=>s.reps>=ex.max);
-  if(all)return{weight:last.weight+inc,reps:ex.min,sets:ex.sets,why:`지난번 모든 세트 ${ex.max}회 달성 → +${inc}kg, ${ex.min}회부터`};
+L.KG=0.45359237;
+L.toU=(kg,u)=>u==='lb'?kg/L.KG:kg; L.toKg=(v,u)=>u==='lb'?v*L.KG:v;
+L.rnd=(x,step)=>Math.round(x/step)*step;
+L.fmtW=(kg,u)=>{const v=L.toU(kg,u);return String(Math.round(v*10)/10)};
+// 이중 점진 과부하. last.weight는 kg 저장, 결과 weight는 표시 단위(u)
+// 상체 +2.5kg / 하체 +5kg (lb: +5 / +10)
+L.suggest=(ex,last,u='kg')=>{
+  if(!last)return{weight:null,reps:ex.min,sets:ex.sets,code:'first'};
+  const lb=u==='lb',inc=lb?(ex.lower?10:5):(ex.lower?5:2.5),step=lb?2.5:1.25;
+  const w=L.rnd(L.toU(last.weight,u),lb?0.5:0.25);
+  if(last.sets.every(s=>s.reps>=ex.max))return{weight:L.rnd(w+inc,step),reps:ex.min,sets:ex.sets,code:'up',inc};
   const minR=Math.min(...last.sets.map(s=>s.reps));
-  if(minR<ex.min-2)return{weight:Math.max(0,Math.round((last.weight*0.9)/2.5)*2.5),reps:ex.min,sets:ex.sets,why:'목표보다 많이 부족했어요 → 약 10% 낮춰 다시'};
-  return{weight:last.weight,reps:Math.min(ex.max,minR+1),sets:ex.sets,why:`같은 무게, 가장 적었던 세트(${minR}회)보다 1회 더`};
+  if(minR<ex.min-2)return{weight:Math.max(0,L.rnd(w*0.9,lb?5:2.5)),reps:ex.min,sets:ex.sets,code:'down'};
+  return{weight:w,reps:Math.min(ex.max,minR+1),sets:ex.sets,code:'reps',minR};
 };
 // 원판: 한쪽 무게 기준 탐욕 + 개수 제한, 정확하지 않으면 가장 가까운 값
 L.plates=(target,bar,plates,collar=0,pairs=null)=>{
@@ -30,6 +36,7 @@ L.plates=(target,bar,plates,collar=0,pairs=null)=>{
   return{total,side,exact:pick===t};
 };
 L.restDefault=t=>t==='compound'?150:t==='iso'?75:90;
+L.EN={'벤치프레스':'Bench Press','인클라인 덤벨프레스':'Incline DB Press','체스트 프레스 머신':'Chest Press Machine','케이블 플라이':'Cable Fly','딥스':'Dips','오버헤드 프레스':'Overhead Press','덤벨 숄더프레스':'DB Shoulder Press','프론트 레이즈':'Front Raise','사이드 레터럴 레이즈':'Lateral Raise','리어 델트 플라이':'Rear Delt Fly','랫풀다운':'Lat Pulldown','바벨 로우':'Barbell Row','시티드 케이블 로우':'Seated Cable Row','풀업':'Pull-up','스쿼트':'Squat','레그프레스':'Leg Press','루마니안 데드리프트':'Romanian Deadlift','레그 익스텐션':'Leg Extension','레그 컬':'Leg Curl','바벨 컬':'Barbell Curl','트라이셉스 푸시다운':'Triceps Pushdown','해머 컬':'Hammer Curl','크런치':'Crunch','행잉 레그레이즈':'Hanging Leg Raise','가슴':'Chest','전면 삼각근':'Front Delts','측면 삼각근':'Side Delts','후면 삼각근':'Rear Delts','등':'Back','하체':'Legs','팔':'Arms','복근':'Abs'};
 L.EX=[
  {n:'벤치프레스',p:'가슴',t:'compound',min:6,max:10},{n:'인클라인 덤벨프레스',p:'가슴',t:'compound',min:8,max:12},{n:'체스트 프레스 머신',p:'가슴',t:'compound',min:8,max:12},{n:'케이블 플라이',p:'가슴',t:'iso',min:10,max:15},{n:'딥스',p:'가슴',t:'compound',min:6,max:12},
  {n:'오버헤드 프레스',p:'전면 삼각근',t:'compound',min:6,max:10},{n:'덤벨 숄더프레스',p:'전면 삼각근',t:'compound',min:8,max:12},{n:'프론트 레이즈',p:'전면 삼각근',t:'iso',min:10,max:15},
