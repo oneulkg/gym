@@ -18,22 +18,23 @@ L.suggest=(ex,last,u='kg')=>{
   return{weight:w,reps:Math.min(ex.max,minR+1),sets:ex.sets,code:'reps',minR};
 };
 // 원판: 한쪽 무게 기준 탐욕 + 개수 제한, 정확하지 않으면 가장 가까운 값
-L.plates=(target,bar,plates,collar=0,pairs=null)=>{
-  const ps=[...plates].sort((a,b)=>b-a);
-  const best={diff:Infinity};
-  // 정확도를 위해 0.01kg 단위 DP
-  const per=(target-bar-2*collar)/2;
-  if(per<=0)return{total:bar+2*collar,side:[],exact:Math.abs(per)<1e-9};
-  {let rem=per,g=[],cnt={};for(const p of ps){const n=pairs&&pairs[p]!=null?pairs[p]:99;while(rem>=p-1e-9&&(cnt[p]||0)<n){rem-=p;g.push(p);cnt[p]=(cnt[p]||0)+1}}
-   if(Math.abs(rem)<1e-9)return{total:target,side:g,exact:true};}
-  const U=100,cap=Math.round(per*U)+Math.round(Math.max(...ps)*U);
+// 원판: 한쪽 조합. 정확하면 exact, 아니면 가장 가까운 아래(lower)/위(higher) 무게
+L.plates=(target,bar,plates,pairs=null)=>{
+  const ps=[...plates].filter(p=>p>0).sort((a,b)=>b-a),U=100,R=x=>Math.round(x*100)/100;
+  if(target<=bar+1e-9)return{total:bar,side:[],exact:Math.abs(target-bar)<1e-9,below:target<bar-1e-9,lower:null,higher:{total:bar,side:[]}};
+  const per=(target-bar)/2;
+  {let rem=per,g=[],c={};for(const p of ps){const n=pairs&&pairs[p]!=null?pairs[p]:99;while(rem>=p-1e-9&&(c[p]||0)<n){rem-=p;g.push(p);c[p]=(c[p]||0)+1}}if(Math.abs(rem)<1e-9)return{total:R(target),side:g,exact:true,below:false,lower:null,higher:null}}
+  const t=Math.round(per*U),cap=t+Math.round((ps[0]||0)*U);
+  // dp[s] = 무게 s를 만드는 원판 목록 (큰 원판 우선, 최소 개수)
   const dp=new Array(cap+1).fill(null);dp[0]=[];
-  for(const p of ps){const v=Math.round(p*U);const n=pairs&&pairs[p]!=null?pairs[p]:99;
-    for(let k=0;k<n;k++){let ch=false;for(let s=cap;s>=v;s--){if(dp[s]===null&&dp[s-v]!==null&&dp[s-v].filter(x=>x===p).length===k){dp[s]=[...dp[s-v],p];ch=true}}if(!ch)break}}
-  const t=Math.round(per*U);let pick=null;
-  for(let d=0;d<=cap;d++){ if(t-d>=0&&dp[t-d]){pick=t-d;break} if(t+d<=cap&&dp[t+d]){pick=t+d;break} }
-  const side=dp[pick].sort((a,b)=>b-a);const total=Math.round((bar+2*collar+2*pick/U)*100)/100;
-  return{total,side,exact:pick===t};
+  for(const p of ps){const v=Math.round(p*U),n=pairs&&pairs[p]!=null?pairs[p]:99;
+    for(let k=0;k<n;k++){let ch=false;for(let x=cap;x>=v;x--){const prev=dp[x-v];if(prev&&prev.filter(y=>y===p).length===k&&(!dp[x]||dp[x].length>prev.length+1)){dp[x]=[...prev,p];ch=true}}if(!ch)break}}
+  const mk=x=>({total:R(bar+2*x/U),side:[...dp[x]].sort((a,b)=>b-a)});
+  if(dp[t])return{...mk(t),exact:true,below:false,lower:null,higher:null};
+  let lo=t;while(lo>0&&!dp[lo])lo--;let hi=t;while(hi<=cap&&!dp[hi])hi++;
+  const lower=mk(lo),higher=hi<=cap?mk(hi):null;
+  const pick=!higher||(t-lo)<=(hi-t)?lower:higher;
+  return{...pick,exact:false,below:false,lower,higher};
 };
 L.restDefault=t=>t==='compound'?150:t==='iso'?75:90;
 L.EN={'벤치프레스':'Bench Press','인클라인 덤벨프레스':'Incline DB Press','체스트 프레스 머신':'Chest Press Machine','케이블 플라이':'Cable Fly','딥스':'Dips','오버헤드 프레스':'Overhead Press','덤벨 숄더프레스':'DB Shoulder Press','프론트 레이즈':'Front Raise','사이드 레터럴 레이즈':'Lateral Raise','리어 델트 플라이':'Rear Delt Fly','랫풀다운':'Lat Pulldown','바벨 로우':'Barbell Row','시티드 케이블 로우':'Seated Cable Row','풀업':'Pull-up','스쿼트':'Squat','레그프레스':'Leg Press','루마니안 데드리프트':'Romanian Deadlift','레그 익스텐션':'Leg Extension','레그 컬':'Leg Curl','바벨 컬':'Barbell Curl','트라이셉스 푸시다운':'Triceps Pushdown','해머 컬':'Hammer Curl','크런치':'Crunch','행잉 레그레이즈':'Hanging Leg Raise','가슴':'Chest','전면 삼각근':'Front Delts','측면 삼각근':'Side Delts','후면 삼각근':'Rear Delts','등':'Back','하체':'Legs','팔':'Arms','복근':'Abs'};
