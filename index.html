@@ -3,29 +3,39 @@
 <header class="top"><h1 data-h="title"></h1><div class="tg"><div class="seg" id="langChips"><button data-l="ko">한</button><button data-l="en">EN</button></div><div class="seg" id="unitChips"><button data-u="kg">kg</button><button data-u="lb">lb</button></div><button class="gear" id="gearBtn" aria-label="settings">⚙</button></div></header>
 <div id="gearMenu" class="gearmenu" hidden><b data-i="data"></b><p class="muted" data-i="dataNote"></p><button class="btn" id="exp" data-i="exp"></button><button class="btn" id="wipe" data-i="wipe"></button><div class="muted" id="today" style="margin-top:8px"></div></div>
 <section id="t-log" class="on">
- <div class="card"><label data-i="ex"></label><select id="exSel"></select><div id="sug" style="margin-top:12px"></div></div>
- <div class="card"><label id="wLbl"></label><input id="w" type="number" inputmode="decimal" step="0.5">
-  <div id="sets"></div><button class="btn s" id="addSet" data-i="addSet"></button><button class="btn s" id="restBtn" data-i="rest"></button>
-  <button class="btn p" id="save" data-i="save"></button></div>
+ <h2 class="ttl" data-i="hLog"></h2>
+ <div class="card"><label data-i="ex"></label><select id="exSel"></select><div id="sug" class="sug"></div></div>
+ <div class="card"><label id="wLbl"></label>
+  <div class="step"><button class="sb" data-st="w" data-d="-1" aria-label="-">−</button><input id="w" class="bigin" type="number" inputmode="decimal" step="0.5"><button class="sb" data-st="w" data-d="1" aria-label="+">+</button></div>
+  <div id="sets"></div>
+  <div class="row2"><button class="btn g" id="addSet" data-i="addSet"></button><button class="btn g" id="restBtn" data-i="rest"></button></div></div>
+ <div class="dock"><button class="btn p" id="save" data-i="save"></button></div>
  <div class="card"><b data-i="e1rm"></b> <span class="muted" data-i="epley"></span><canvas id="chart" width="600" height="300"></canvas><div id="hist"></div></div>
- <div class="card muted" style="font-size:13px" id="rules"></div>
+ <details class="card muted" style="font-size:13px"><summary data-i="ruleH"></summary><div id="rules"></div></details>
 </section>
 <section id="t-plate">
- <div class="card"><label id="ptLbl" class="biglbl"></label><input id="pt" class="bigin" type="number" inputmode="decimal" step="0.5">
+ <h2 class="ttl" data-i="hPlate"></h2>
+ <div class="card"><label id="ptLbl" class="biglbl"></label>
+ <div class="step"><button class="sb" data-st="pt" data-d="-1" aria-label="-">−</button><input id="pt" class="bigin" type="number" inputmode="decimal" step="0.5"><button class="sb" data-st="pt" data-d="1" aria-label="+">+</button></div>
+ <div class="chips quick" id="qChips"></div>
  <label data-i="bar"></label><div class="chips" id="barChips"></div>
  <div id="pbWrap" hidden><label id="pbLbl"></label><input id="pb" type="number" inputmode="decimal" step="0.5"></div></div>
- <div class="card"><div id="pres"></div><div class="bar" id="barViz"></div></div>
- <div class="card"><label data-i="plates"></label><div class="chips" id="plChips"></div>
- <div class="row" style="margin-top:8px"><input id="newPl" type="number" inputmode="decimal"><button class="btn s" id="addPl" style="flex:0" data-i="add"></button></div></div>
+ <div class="card res"><div id="pres"></div><div class="bar" id="barViz"></div></div>
+ <details class="card"><summary data-i="plates"></summary><div class="chips" id="plChips" style="margin-top:10px"></div>
+ <div class="row" style="margin-top:8px"><input id="newPl" type="number" inputmode="decimal"><button class="btn g" id="addPl" style="flex:0;margin:0;min-width:84px" data-i="add"></button></div></details>
 </section>
 <section id="t-rest">
- <div class="card"><label data-i="rEx"></label><select id="rEx"></select><label data-i="rSec"></label><input id="rSec" type="number" inputmode="numeric">
+ <h2 class="ttl" data-i="hRest"></h2>
+ <div class="card"><div class="muted ctr" id="rFor"></div><div class="timer" id="tm">0:00</div>
+ <div class="row2"><button class="btn g" id="tMinus">−15s</button><button class="btn g" id="tPlus">+15s</button></div>
+ <button class="btn p xl" id="tStart" data-i="start"></button><button class="btn" id="tStop" data-i="stop"></button></div>
+ <div class="card"><b data-i="rSetH"></b><label data-i="rEx"></label><select id="rEx"></select><label data-i="rSec"></label><input id="rSec" type="number" inputmode="numeric">
  <div class="chips" style="margin-top:8px"><button class="chip" data-s="60" data-i="s60"></button><button class="chip" data-s="90" data-i="s90"></button><button class="chip" data-s="120" data-i="s120"></button><button class="chip" data-s="180" data-i="s180"></button></div>
- <div class="timer" id="tm">0:00</div><button class="btn p" id="tStart" style="font-size:24px;min-height:80px" data-i="start"></button><button class="btn" id="tStop" data-i="stop"></button>
  <p class="muted" data-i="restNote"></p></div>
 </section>
 <section id="t-rt">
- <div class="card"><label data-i="time"></label><div class="chips" id="minChips"></div><label data-i="parts"></label><div class="chips" id="partChips"></div>
+ <h2 class="ttl" data-i="hRt"></h2>
+ <div class="card"><label class="stp" data-i="time"></label><div class="chips" id="minChips"></div><label class="stp" data-i="parts"></label><div class="chips" id="partChips"></div>
  <button class="btn p" id="gen" data-i="gen"></button></div>
  <div class="card" id="rtOut"></div>
 </section>

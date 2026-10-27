@@ -13,7 +13,7 @@ function fillEx(sel){const v=sel.value;sel.innerHTML=L.EX.map(e=>`<option value=
 function applyLang(){document.documentElement.lang=st.lang;$$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));$$('[data-h]').forEach(e=>e.innerHTML=t(e.dataset.h));
  document.title=st.lang==='en'?"오늘 몇 kg · Today's Lift":'오늘 몇 kg';$('#today').textContent=new Date().toLocaleDateString(st.lang==='en'?'en-US':'ko-KR',{month:'short',day:'numeric',weekday:'short'});
  $$('#langChips button').forEach(c=>c.classList.toggle('on',c.dataset.l===st.lang));$$('#unitChips button').forEach(c=>c.classList.toggle('on',c.dataset.u===st.unit));
- const lb=st.unit==='lb';$('#rules').innerHTML=`<b>${t('ruleH')}</b><br>· ${t('rule1',{up:lb?'5 lb':'2.5kg',lo:lb?'10 lb':'5kg'})}<br>· ${t('rule2')}<br>· ${t('rule3')}`;
+ const lb=st.unit==='lb';$('#rules').innerHTML=`· ${t('rule1',{up:lb?'5 lb':'2.5kg',lo:lb?'10 lb':'5kg'})}<br>· ${t('rule2')}<br>· ${t('rule3')}`;
  $('#wLbl').textContent=`${t('weight')} (${UL()})`;$('#ptLbl').textContent=`${t('target')} (${UL()})`;$('#pbLbl').textContent=`${t('customBar')} (${UL()})`;$('#newPl').placeholder=`${t('addPl')} (${UL()})`;
  fillEx($('#exSel'));fillEx($('#rEx'));renderLog();renderPlate();loadRest();chips();renderRt()}
 $$('#langChips button').forEach(c=>c.onclick=()=>{st.lang=c.dataset.l;save();applyLang()});
@@ -28,8 +28,9 @@ function renderLog(){const n=$('#exSel').value,ex=exDef(n),last=lastOf(n),s=L.su
  const why=s.code==='first'?t('first',{n:ex.min}):s.code==='up'?t('up',{max:ex.max,min:ex.min,inc:s.inc+' '+UL()}):s.code==='down'?t('down'):t('reps',{m:s.minR});
  $('#sug').innerHTML=`<div class="muted">${t('todayT',{a:ex.min,b:ex.max})}</div><div class="big">${s.weight==null?'—':W(s.weight)} × ${t('xReps',{n:s.reps})} × ${t('xSets',{n:s.sets})}</div><div class="muted">${why}</div>`+(last?`<div class="muted">${t('last',{d:last.date,w:L.fmtW(last.weight,U())+' '+UL(),r:last.sets.map(x=>x.reps).join('/')})}</div>`:'');
  if(!sess.length){$('#w').value=s.weight??'';sess=Array.from({length:s.sets},()=>({reps:s.reps}))}
- $('#sets').innerHTML=sess.map((x,i)=>`<div class="setrow"><b>${t('setN',{n:i+1})}</b><input type="number" inputmode="numeric" value="${x.reps}" data-k="${i}"><span class="muted">${t('repsU')}</span><button class="chip" data-d="${i}">✕</button></div>`).join('');
+ $('#sets').innerHTML=`<div class="setrow muted" style="margin:10px 0 0;font-size:12px"><div>${t('cSet')}</div><div></div><div class="ctr">${t('cR')}</div><div></div><div></div></div>`+sess.map((x,i)=>`<div class="setrow"><div class="n">${i+1}</div><button class="sb" data-r="${i}" data-v="-1" aria-label="-">−</button><input type="number" inputmode="numeric" value="${x.reps}" data-k="${i}" aria-label="${t('setN',{n:i+1})}"><button class="sb" data-r="${i}" data-v="1" aria-label="+">+</button><button class="x" data-d="${i}" aria-label="delete">✕</button></div>`).join('');
  $$('#sets input').forEach(i=>i.oninput=()=>sess[i.dataset.k].reps=+i.value);$$('#sets [data-d]').forEach(b=>b.onclick=()=>{sess.splice(b.dataset.d,1);renderLog()});
+ $$('#sets [data-r]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.r];o.reps=Math.max(0,(+o.reps||0)+ +b.dataset.v);renderLog()});
  const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th></tr>${h.slice(-8).reverse().map(x=>`<tr><td>${x.date}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td></tr>`).join('')}</table>`:`<p class="muted">${t('noHist')}</p>`;chart(h)}
 function chart(h){const c=$('#chart'),g=c.getContext('2d');g.clearRect(0,0,600,300);g.fillStyle='#666';g.font='22px sans-serif';
  if(h.length<2){g.fillText(t('chart2'),90,150);return}
@@ -44,7 +45,7 @@ $('#restBtn').onclick=()=>{$('#rEx').value=$('#exSel').value;loadRest();show('t-
 const COL={25:'#e5484d',20:'#3e7bfa',15:'#f5c518',10:'#46a758',5:'#eee',2.5:'#e5484d',1.25:'#bbb'},COLB={45:'#3e7bfa',35:'#f5c518',25:'#46a758',10:'#eee',5:'#e5484d',2.5:'#bbb'};
 const BARS={kg:[['std',20],['w',15],['b10',10],['ez',7],['cus',null]],lb:[['std',45],['w',35],['ez',25],['cus',null]]};
 if(!$('#pb').value){$('#pb').value=U()==='lb'?45:20;$('#pt').value=U()==='lb'?135:60}
-function renderPlate(){const ps=plateSet(),ks=Object.keys(ps).map(Number).sort((a,b)=>b-a),bn=I18N[st.lang].bars,bars=BARS[U()];
+function renderPlate(){quick();const ps=plateSet(),ks=Object.keys(ps).map(Number).sort((a,b)=>b-a),bn=I18N[st.lang].bars,bars=BARS[U()];
  if(!bars.some(b=>b[0]===st.barSel))st.barSel='std';
  const cur=bars.find(b=>b[0]===st.barSel);if(cur[1]!=null)$('#pb').value=cur[1];$('#pbWrap').hidden=cur[1]!=null;
  $('#barChips').innerHTML=bars.map(([k,v])=>`<button class="chip ${k===st.barSel?'on':''}" data-k="${k}">${v==null?bn[k]:(bn[k]?bn[k]+' ':'')+v}</button>`).join('');
@@ -64,10 +65,13 @@ function renderPlate(){const ps=plateSet(),ks=Object.keys(ps).map(Number).sort((
  $('#barViz').innerHTML=[...r.side].reverse().map(pv).join('')+'<div class="sleeve"></div><div class="shaft"></div><div class="sleeve"></div>'+r.side.map(pv).join('')}
 ['#pt','#pb'].forEach(s=>$(s).oninput=renderPlate);
 $('#addPl').onclick=()=>{const v=+$('#newPl').value;if(v>0){plateSet()[v]=1;save();$('#newPl').value='';renderPlate()}};
+$$('[data-st]').forEach(b=>b.onclick=()=>{const i=$('#'+b.dataset.st),inc=U()==='lb'?5:2.5,v=Math.max(0,Math.round(((+i.value||0)+ +b.dataset.d*inc)*100)/100);i.value=v;i.dispatchEvent(new Event('input'))});
+const QT={kg:[40,60,80,100,120,140],lb:[95,135,185,225,275,315]};
+function quick(){$('#qChips').innerHTML=QT[U()].map(v=>`<button class="chip" data-q="${v}">${v}</button>`).join('');$$('#qChips [data-q]').forEach(b=>b.onclick=()=>{$('#pt').value=b.dataset.q;renderPlate()})}
 // ---- 3 휴식
 let end=0,tick=null,ac;
 const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
-function loadRest(){const n=$('#rEx').value;$('#rSec').value=st.rest[n]??L.restDefault(exDef(n).t);if(!end)$('#tm').textContent=fmt(+$('#rSec').value)}
+function loadRest(){const n=$('#rEx').value;$('#rSec').value=st.rest[n]??L.restDefault(exDef(n).t);if(!end)$('#tm').textContent=fmt(+$('#rSec').value);$('#rFor').textContent=nm(n)}
 $('#rEx').onchange=loadRest;$('#rSec').oninput=()=>{st.rest[$('#rEx').value]=+$('#rSec').value;save();if(!end)$('#tm').textContent=fmt(+$('#rSec').value)};
 $$('#t-rest [data-s]').forEach(b=>b.onclick=()=>{$('#rSec').value=b.dataset.s;$('#rSec').oninput()});
 function beep(){try{ac??=new AudioContext();[0,.35,.7].forEach(d=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.4,ac.currentTime+d);o.start(ac.currentTime+d);o.stop(ac.currentTime+d+.25)})}catch(e){}}
@@ -76,6 +80,7 @@ function upd(){if(!end)return;const left=Math.max(0,Math.ceil((end-Date.now())/1
  if(!left){clearInterval(tick);end=0;localStorage.removeItem('gymEnd');$('#tm').classList.add('done');$('#tm').textContent=t('done');navigator.vibrate?.([400,200,400,200,400]);beep();
   if(window.Notification&&Notification.permission==='granted'&&document.hidden)new Notification(t('notif'))}}
 $('#tStart').onclick=()=>{if(window.Notification&&Notification.permission==='default')Notification.requestPermission();startT()};
+const bump=d=>{if(end){end+=d*1000;localStorage.setItem('gymEnd',end);upd()}else{$('#rSec').value=Math.max(5,+$('#rSec').value+d);$('#rSec').oninput()}};$('#tPlus').onclick=()=>bump(15);$('#tMinus').onclick=()=>bump(-15);
 $('#tStop').onclick=()=>{clearInterval(tick);end=0;localStorage.removeItem('gymEnd');document.title='오늘 몇 kg';loadRest()};
 document.addEventListener('visibilitychange',upd);
 {const e=+localStorage.getItem('gymEnd');if(e>Date.now()){end=e;tick=setInterval(upd,250)}}

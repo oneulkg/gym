@@ -29,3 +29,29 @@ header.top h1{font-size:18px;white-space:nowrap;overflow:hidden}header.top h1 sm
 .gearmenu{position:fixed;top:60px;right:10px;left:10px;z-index:7;background:#18181c;border:1px solid #3a3a42;border-radius:16px;padding:14px;box-shadow:0 10px 30px #000a}
 
 .biglbl{font-size:16px;color:#fff;font-weight:700}.bigin{font-size:34px;font-weight:800;min-height:64px;text-align:center}.fx{font-size:22px;font-weight:800;color:#c6ff3d;line-height:1.35}
+
+/* v8 redesign: one primary per screen, 48px+ targets, consistent buttons */
+[hidden]{display:none!important}
+.ttl{font-size:24px;margin:6px 2px 2px;font-weight:800}
+label{font-size:14px;color:#bbb}
+.btn{min-height:56px;border-radius:14px}
+.btn.p{box-shadow:0 6px 18px #c6ff3d22}.btn.xl{font-size:26px;min-height:84px}
+.btn.g{background:none;border:1.5px solid #3a3a42;color:#eee;font-size:16px;margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.step{display:grid;grid-template-columns:56px 1fr 56px;gap:8px;align-items:center}
+.sb{min-height:56px;border-radius:14px;border:0;background:#2a2a30;color:#fff;font-size:28px;font-weight:700}.sb:active,.btn:active,.chip:active{transform:scale(.97)}
+.bigin{font-size:34px;font-weight:800;min-height:64px;text-align:center;font-variant-numeric:tabular-nums}
+.sug{margin-top:12px;padding:12px;border-radius:12px;background:#c6ff3d14;border:1px solid #c6ff3d40}
+.setrow{grid-template-columns:34px 48px 1fr 48px 40px;gap:6px;margin:8px 0}
+.setrow .n{width:32px;height:32px;border-radius:9px;background:#2a2a30;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.setrow input{text-align:center;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.setrow .sb{min-height:48px;font-size:22px}.setrow .x{background:none;border:0;color:#777;font-size:18px;min-height:48px}
+.dock{position:sticky;bottom:70px;z-index:4;padding:0 0 4px}.dock .btn{margin:0}
+.quick{margin-top:10px}.quick .chip{padding:8px 12px;min-height:40px;font-size:14px}
+.res{border-color:#c6ff3d55}
+details summary{cursor:pointer;font-weight:700;color:#ddd;min-height:32px;list-style-position:inside}
+.ctr{text-align:center}.timer{font-size:96px;margin:4px 0 12px}
+.stp{color:#fff;font-weight:700;font-size:15px;margin-top:12px}
+.seg button{min-height:42px;min-width:42px}.gear{min-height:42px;min-width:44px}
+nav button{min-height:64px}nav button.on i{font-weight:800}
+.ri{grid-template-columns:1fr 50px 66px 58px 44px}.ri .chip{padding:0;min-width:44px}
