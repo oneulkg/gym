@@ -77,4 +77,27 @@ eq('없는 템플릿',L.tpl('x'),null);
 eq('전신 템플릿: 하체·가슴·등 모두',['하체','가슴','등'].every(p=>L.tpl('full3').items.some(i=>L.EX.find(e=>e.n===i.n).p===p)),true);
 for(const k of ['gLog','gPlate','gRest','gRt','tplH','noHist2','rtEmpty2','q_e1rm','q_prog','q_deload','q_wu','q_rr','tourT1','tourB3','tourAgain'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);
 eq('ko/en 키 동일',Object.keys(I18N.ko).filter(k=>!(k in I18N.en)),[]);
+{const fs=require('fs'),a=fs.readFileSync(__dirname+'/app.js','utf8'),w=fs.readFileSync(__dirname+'/sw.js','utf8');
+eq('v12 방문자: 기본 비공개',/const SHOW_VISITORS=false;/.test(a),true);
+eq('v13 SW: 외부 API 캐시 안함',/origin!==location\.origin\)return/.test(w)&&w.includes("gym-v16"),true);}
+
+// v13 공유 텍스트
+{const B='벤치프레스',lg=[{ex:B,date:'2026-10-20',weight:67.5,sets:[{reps:6},{reps:6},{reps:6}]},{ex:'스쿼트',date:'2026-10-22',weight:100,sets:[{reps:5}]},{ex:B,date:'2026-10-28',weight:70,sets:[{reps:6},{reps:6},{reps:6}]}];
+ const s1=L.shareSummary(lg,'2026-10-28');
+ eq('share 요약: diff·볼륨·날수·PR',[s1.items[0].diff,s1.vol,s1.days,s1.pr],[2.5,1260,3,true]);
+ eq('share 한 줄 1종목',L.shareText(s1),'오운완 ✅ 벤치프레스 70kg×6×3 ✅✅✅ · 지난번보다 +2.5kg · 볼륨 1,260kg · 기록 3일째 🏆 · 오늘 몇 kg oneulkg.github.io/gym #오운완 #헬스기록');
+ eq('share 미완료 세트 ⬜',L.checks(2,3),'✅✅⬜');
+ const l2=[...lg.slice(0,2),{...lg[2],weight:60,sets:[{reps:8},{reps:7}],n:3}],s2=L.shareSummary(l2,'2026-10-28');
+ eq('share 세트 다름·감소·PR 없음',L.shareText(s2),'오운완 ✅ 벤치프레스 60kg×8/7 ✅✅⬜ · 지난번보다 -7.5kg · 볼륨 900kg · 기록 3일째 · 오늘 몇 kg oneulkg.github.io/gym #오운완 #헬스기록');
+ const l3=[...lg,{ex:'스쿼트',date:'2026-10-28',weight:100,sets:[{reps:5},{reps:5}]},{ex:'랫풀다운',date:'2026-10-28',weight:50,sets:[{reps:10}]},{ex:'딥스',date:'2026-10-28',weight:0,sets:[{reps:10}]}],s3=L.shareSummary(l3,'2026-10-28');
+ eq('share 여러 종목: 3개+외 N개·총 볼륨',L.shareText(s3),'오운완 ✅ 벤치프레스 70kg×6×3🏆 / 스쿼트 100kg×5×2 / 랫풀다운 50kg×10 외 1개 · 총 볼륨 2,760kg · 기록 3일째 · 오늘 몇 kg oneulkg.github.io/gym #오운완 #헬스기록');
+ eq('share 같은 무게',L.shareText(L.shareSummary([lg[0],{...lg[0],date:'2026-10-21'}],'2026-10-21')).includes('지난번과 같은 무게'),true);
+ eq('share EN lb',L.shareText(s1,{u:'lb',lang:'en',name:n=>L.EN[n]}),"Workout done ✅ Bench Press 154.3lb×6×3 ✅✅✅ · vs last +5.5lb · vol 2,778lb · day 3 🏆 · 오늘 몇 kg oneulkg.github.io/gym");
+ eq('share 첫 기록: diff 없음',L.shareText(L.shareSummary([lg[0]],'2026-10-20')),'오운완 ✅ 벤치프레스 67.5kg×6×3 ✅✅✅ · 볼륨 1,215kg · 기록 1일째 · 오늘 몇 kg oneulkg.github.io/gym #오운완 #헬스기록');
+ eq('share 빈 날',L.shareText(L.shareSummary(lg,'2026-01-01')),'');
+ eq('share: 같은 날 같은 종목은 마지막',L.shareSummary([lg[0],{...lg[0],weight:70}],'2026-10-20').items.map(i=>i.weight),[70]);
+ for(const k of ['shBtn','shCopy','shImg','shCopied','shToday'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);}
+eq('fb 빈칸',L.fbCheck('  ',0,1e6),'empty');eq('fb 500자 초과',L.fbCheck('a'.repeat(501),0,1e6),'long');eq('fb 30초 제한',L.fbCheck('hi',1e6,1e6+29999),'wait');eq('fb OK',L.fbCheck('hi',1e6,1e6+30000),'');
+eq('fb body',L.fbBody(' 덤벨 ','기능요청','',"ko",'v16'),'[기능요청] 덤벨\n(ko · v16)');eq('fb ntfy 주소',/^https:\/\/ntfy\.sh\/oneulkg-fb-[0-9a-f]{24}$/.test(L.FB_URL),true);
+for(const k of ['fbH','fbNote','fbSend','fbOk','fbPh'])eq('i18n '+k,[!!I18N.ko[k],!!I18N.en[k]],[true,true]);
 console.log(`${ok} pass, ${f} fail`);process.exit(f?1:0);

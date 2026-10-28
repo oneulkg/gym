@@ -180,7 +180,7 @@ function wrapC(g,txt,max){const out=[];let line='';for(const w of String(txt).sp
 function storyCanvas(){const s=shareSum(),c=document.createElement('canvas');c.width=1080;c.height=1920;const g=c.getContext('2d'),u=U(),UL2=u==='lb'?'lb':'kg',S=L.SH[st.lang]||L.SH.ko;
  const bg=g.createLinearGradient(0,0,0,1920);bg.addColorStop(0,'#16180f');bg.addColorStop(1,'#0d0d0f');g.fillStyle=bg;g.fillRect(0,0,1080,1920);
  g.fillStyle='#c6ff3d';g.fillRect(0,0,1080,14);
- g.textBaseline='alphabetic';g.fillStyle='#fff';g.font=`800 76px ${FONT}`;g.fillText('오늘 ',90,220);const w0=g.measureText('오늘 ').width;g.fillStyle='#c6ff3d';g.fillText('몇 kg',90+w0,220);
+ g.textBaseline='alphabetic';g.fillStyle='#fff';g.font=`800 76px ${FONT}`;g.fillText('오늘 ',90,220);const w0=g.measureText('오늘 ').width;g.fillStyle='#c6ff3d';g.fillText('몇 kg',90+w0,220);{const tx=st.lang==='en'?'DONE ✅':'오운완 ✅';g.font=`800 44px ${FONT}`;const tw=g.measureText(tx).width+56;g.fillStyle='#c6ff3d';g.beginPath();g.roundRect(990-tw,160,tw,80,40);g.fill();g.fillStyle='#111';g.textAlign='center';g.fillText(tx,990-tw/2,215);g.textAlign='left'}
  g.fillStyle='#999';g.font=`500 40px ${FONT}`;const dd=new Date(s.date+'T00:00');g.fillText(dd.toLocaleDateString(st.lang==='en'?'en-US':'ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'}),90,290);
  let y=420;const it=s.items.slice(0,4),big=it.length===1;
  for(const i of it){g.fillStyle='#18181c';const h=big?520:275;g.beginPath();g.roundRect(70,y-70,940,h,36);g.fill();g.strokeStyle=i.pr?'#c6ff3d':'#2a2a30';g.lineWidth=i.pr?5:2;g.stroke();
@@ -204,3 +204,15 @@ $('#shImgBtn').onclick=async()=>{const b=await blobOf(storyCanvas()),f=new File(
  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:x});return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f.name;document.body.appendChild(a);a.click();a.remove();await copyTxt(x);toast(t('shSaved'))};
 shareBar();
+
+// v16 feedback
+{let fbCat='feat';const fbLbl={feat:'기능요청',bug:'불편',etc:'기타'};
+const fbPh=()=>{$('#fbMsg').placeholder=t('fbPh');$('#fbContact').placeholder=t('fbCPh')};fbPh();
+$$('[data-l]').forEach(b=>b.addEventListener('click',()=>setTimeout(fbPh,0)));
+$$('#fbCat .chip').forEach(b=>b.onclick=()=>{fbCat=b.dataset.c;$$('#fbCat .chip').forEach(x=>x.classList.toggle('on',x===b))});
+$('#fbMsg').oninput=()=>$('#fbN').textContent=$('#fbMsg').value.length+'/500';
+$('#fbSend').onclick=async()=>{const m=$('#fbMsg').value,last=+localStorage.fbLast||0,e=L.fbCheck(m,last,Date.now());
+ if(e){toast(t({empty:'fbEmpty',long:'fbLong',wait:'fbWait'}[e]));return}
+ const b=$('#fbSend');b.disabled=true;
+ try{const r=await fetch(L.FB_URL,{method:'POST',body:L.fbBody(m,fbLbl[fbCat],$('#fbContact').value,st.lang,'v16'),headers:{Title:'oneulkg feedback',Tags:fbCat}});if(!r.ok)throw 0;
+  localStorage.fbLast=Date.now();$('#fbMsg').value='';$('#fbContact').value='';$('#fbN').textContent='0/500';toast(t('fbOk'))}catch(_){toast(t('fbFail'))}finally{b.disabled=false}}}

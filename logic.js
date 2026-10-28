@@ -112,4 +112,8 @@ L.shareText=(sum,{u='kg',lang='ko',name=n=>n}={})=>{const S=L.SH[lang]||L.SH.ko,
   if(it.length===1){const i=it[0];body=[`${name(i.ex)} ${L.setStr(i.weight,i.reps,u)} ${L.checks(i.done,i.total)}`,dif(i),`${S.vol} ${vol(i.vol)}`,days+pr].filter(Boolean).join(' · ')}
   else{const top=it.slice(0,3).map(i=>`${name(i.ex)} ${L.setStr(i.weight,i.reps,u)}${i.pr?'🏆':''}`).join(' / ')+(it.length>3?' '+S.more.replace('{n}',it.length-3):'');
     body=[top,`${S.tvol} ${vol(sum.vol)}`,days].join(' · ')}
-  return`오늘 몇 kg 🏋️ ${body} ${L.SHARE_URL}`};
+  return lang==='en'?`Workout done ✅ ${body} · 오늘 몇 kg ${L.SHARE_URL}`:`오운완 ✅ ${body} · 오늘 몇 kg ${L.SHARE_URL} #오운완 #헬스기록`};
+
+L.FB_URL='https://ntfy.sh/oneulkg-fb-c7848989c6d65910fd8931fb';L.FB_MAX=500;L.FB_GAP=30000;
+L.fbCheck=(msg,last,now)=>{const m=(msg||'').trim();if(!m)return 'empty';if(m.length>L.FB_MAX)return 'long';if(last&&now-last<L.FB_GAP)return 'wait';return ''};
+L.fbBody=(msg,cat,contact,lang,ver)=>`[${cat||'etc'}] ${(msg||'').trim().slice(0,L.FB_MAX)}`+(contact&&contact.trim()?`\n연락처: ${contact.trim().slice(0,80)}`:'')+`\n(${lang} · ${ver})`;

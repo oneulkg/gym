@@ -99,3 +99,5 @@ input,select,textarea,#tm{word-break:normal;overflow-wrap:normal}
 .shtxt{background:#0d0d0f;border:1px solid #3a3a42;border-radius:12px;padding:12px;font-size:15px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere;user-select:all}
 .sheet img{display:block;width:46%;margin:6px auto 4px;border-radius:12px;border:1px solid #2a2a30}
 .share[hidden]{display:none}
+
+.fb summary{font-weight:600}.fb textarea,.fb input{width:100%;box-sizing:border-box;margin-top:8px;font:inherit;padding:10px;border-radius:10px;border:1px solid #ccc3}.fbn{text-align:right;font-size:12px}
