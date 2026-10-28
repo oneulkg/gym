@@ -193,7 +193,7 @@ function storyCanvas(){const s=shareSum(),c=document.createElement('canvas');c.w
  y=Math.max(y+30,1380);const stat=(lab,val,x)=>{g.fillStyle='#999';g.font=`600 38px ${FONT}`;g.fillText(lab,x,y);g.fillStyle='#fff';g.font=`800 64px ${FONT}`;g.fillText(val,x,y+80)};
  stat(s.items.length>1?S.tvol:S.vol,L.num(L.toU(s.vol,u))+UL2,110);stat(st.lang==='en'?'days trained':'운동한 날',S.days.replace('{n}',s.days),600);
  if(s.pr){g.fillStyle='#c6ff3d';g.beginPath();g.roundRect(90,1580,900,90,45);g.fill();g.fillStyle='#111';g.font=`800 44px ${FONT}`;g.textAlign='center';g.fillText(st.lang==='en'?'🏆 New PR today':'🏆 오늘 신기록!',540,1640);g.textAlign='left'}
- g.fillStyle='#c6ff3d';g.fillRect(0,1906,1080,14);g.textAlign='center';g.fillStyle='#eee';g.font=`700 48px ${FONT}`;g.fillText(L.SHARE_URL,540,1800);g.fillStyle='#888';g.font=`500 32px ${FONT}`;g.fillText(st.lang==='en'?'Free · No ads · No sign-up':'무료 · 광고 없음 · 가입 없음',540,1856);g.textAlign='left';
+ g.fillStyle='#c6ff3d';g.fillRect(0,1906,1080,14);g.textAlign='center';g.fillStyle='#eee';g.font=`700 48px ${FONT}`;g.fillText(L.SHARE_URL,540,1800);g.textAlign='left';
  return c}
 const blobOf=c=>new Promise(r=>c.toBlob(r,'image/png'));
 function openShare(){const x=shareTxt();if(!x)return;$('#shTxt').textContent=x;const c=storyCanvas();$('#shImg').src=c.toDataURL('image/png');$('#shSheet').hidden=false}
