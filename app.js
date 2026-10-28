@@ -147,3 +147,20 @@ function tourEnd(){$('#tour').hidden=true;st.tourDone=1;save()}
 $('#tNext').onclick=()=>{if(tStep<2){tStep++;tourShow()}else tourEnd()};$('#tSkip').onclick=tourEnd;
 $('#tourAgain').onclick=()=>{$('#gearMenu').hidden=true;tStep=0;tourShow()};
 renderTpl();if(!st.tourDone&&!st.log.length){tStep=0;tourShow()}
+
+// ===== 방문자 카운터 (v12) =====
+// 공개 표시 스위치: true로 바꾸면 모든 사용자에게 보임. 카운트는 항상 함.
+const SHOW_VISITORS=false;
+(function visitors(){try{
+ const API='https://abacus.jasoncameron.dev',NS='oneulkg-gym';
+ const q=new URLSearchParams(location.search);if(q.has('stats')){q.get('stats')==='off'?localStorage.removeItem('gymStats'):localStorage.setItem('gymStats','1')}
+ const show=SHOW_VISITORS||localStorage.getItem('gymStats')==='1';
+ const day=new Date(Date.now()+9*3600e3).toISOString().slice(0,10).replace(/-/g,'');
+ const first=localStorage.getItem('gymVisit')!==day;if(!first&&!show)return;
+  const call=k=>fetch(`${API}/${first?'hit':'get'}/${NS}/${k}`,{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(j=>j.value??0).catch(()=>first?Promise.reject():0);
+ Promise.all([call('day-'+day),call('total')]).then(([d,tt])=>{
+  if(first)localStorage.setItem('gymVisit',day);
+  if(!show||(!d&&!tt))return;const el=document.getElementById('vis');if(!el)return;
+  const f=n=>Number(n).toLocaleString();el.innerHTML=sent(t('vis',{d:f(d),t:f(tt)}));el.hidden=false;
+ }).catch(()=>{});
+}catch(e){}})();

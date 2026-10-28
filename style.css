@@ -89,3 +89,5 @@ h1,h2,h3,.guide,.tpl b,.tourc h3,label,button{text-wrap:balance}
 p,.tip p,.tourc p,.tpl small,small,.note,.rules{text-wrap:pretty}
 input,select,textarea,#tm{word-break:normal;overflow-wrap:normal}
 .sn{display:inline-block;max-width:100%}
+
+.vis{text-align:center;font-size:12px;opacity:.55;margin:8px 16px 96px;word-break:keep-all}
