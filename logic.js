@@ -91,3 +91,25 @@ if(typeof module!=='undefined')module.exports=L;
 L.TPL=[{id:'full3',mins:45,parts:['하체','가슴','등']},{id:'upper',mins:50,parts:['가슴','등','측면 삼각근','팔']},{id:'lower',mins:45,parts:['하체','복근']},
  {id:'push',mins:45,parts:['가슴','전면 삼각근','측면 삼각근','팔']},{id:'pull',mins:45,parts:['등','후면 삼각근','팔']}];
 L.tpl=id=>{const x=L.TPL.find(t=>t.id===id);return x?{...x,items:L.routine(x.mins,x.parts).items}:null};
+
+// ---- v13 결과 공유 (한 줄 텍스트)
+L.SHARE_URL='oneulkg.github.io/gym';
+// 그날 기록 요약: 종목별(같은 종목 여러 번이면 마지막), 이전 기록 대비 무게 차, 볼륨, PR, 운동한 날 수
+L.shareSummary=(log,date)=>{const day=log.filter(x=>x.date===date),by=new Map();day.forEach(x=>by.set(x.ex,x));
+  const items=[...by.values()].map(x=>{const prev=log.filter(y=>y.ex===x.ex&&y.date<date).slice(-1)[0];const reps=x.sets.map(s=>s.reps);
+    return{ex:x.ex,weight:x.weight,reps,done:x.sets.length,total:Math.max(x.n||0,x.sets.length),diff:prev?Math.round((x.weight-prev.weight)*1e4)/1e4:null,vol:x.weight*reps.reduce((a,b)=>a+b,0),pr:!!L.pr(log,x)}});
+  return{date,items,vol:items.reduce((a,i)=>a+i.vol,0),days:new Set(log.filter(x=>x.date<=date).map(x=>x.date)).size,pr:items.some(i=>i.pr)}};
+L.setStr=(w,reps,u)=>{const ws=L.fmtW(w,u)+(u==='lb'?'lb':'kg');return reps.length===1?`${ws}×${reps[0]}`:reps.every(r=>r===reps[0])?`${ws}×${reps[0]}×${reps.length}`:`${ws}×${reps.join('/')}`};
+L.checks=(d,t)=>'✅'.repeat(Math.min(d,6))+'⬜'.repeat(Math.max(0,Math.min(t,6)-Math.min(d,6)));
+L.num=n=>Math.round(n).toLocaleString('en-US');
+L.SH={ko:{since:'지난번보다',same:'지난번과 같은 무게',vol:'볼륨',tvol:'총 볼륨',days:'기록 {n}일째',more:'외 {n}개'},
+ en:{since:'vs last',same:'same as last',vol:'vol',tvol:'total vol',days:'day {n}',more:'+{n} more'}};
+// 한 줄 텍스트. 종목 1개면 자세히, 여러 개면 최대 3개를 " / "로 + 총 볼륨
+L.shareText=(sum,{u='kg',lang='ko',name=n=>n}={})=>{const S=L.SH[lang]||L.SH.ko,U=u==='lb'?'lb':'kg',it=sum.items;if(!it.length)return'';
+  const dif=i=>{if(i.diff==null)return'';const d=Math.round(L.toU(i.diff,u)*10)/10;return d?`${S.since} ${d>0?'+':''}${d}${U}`:S.same};
+  const vol=v=>L.num(L.toU(v,u))+U,days=S.days.replace('{n}',sum.days),pr=sum.pr?' 🏆':'';
+  let body;
+  if(it.length===1){const i=it[0];body=[`${name(i.ex)} ${L.setStr(i.weight,i.reps,u)} ${L.checks(i.done,i.total)}`,dif(i),`${S.vol} ${vol(i.vol)}`,days+pr].filter(Boolean).join(' · ')}
+  else{const top=it.slice(0,3).map(i=>`${name(i.ex)} ${L.setStr(i.weight,i.reps,u)}${i.pr?'🏆':''}`).join(' / ')+(it.length>3?' '+S.more.replace('{n}',it.length-3):'');
+    body=[top,`${S.tvol} ${vol(sum.vol)}`,days].join(' · ')}
+  return`오늘 몇 kg 🏋️ ${body} ${L.SHARE_URL}`};

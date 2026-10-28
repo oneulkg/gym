@@ -12,6 +12,7 @@
   <div id="sets"></div><p class="muted hint" data-i="doneHint"></p>
   <div class="row2"><button class="btn g" id="addSet" data-i="addSet"></button><button class="btn g" id="allDone" data-i="allDone"></button></div><div class="row2"><button class="btn g" id="same" data-i="same"></button><button class="btn g" id="restBtn" data-i="rest"></button></div></div>
  <div class="dock"><button class="btn p" id="save" data-i="save"></button></div>
+ <div class="card share" id="shareBar" hidden><span id="shareLbl"></span><button class="btn p sm" id="shareBtn" data-i="shBtn"></button></div>
  <div class="card"><b data-i="e1rm"></b><button class="q" data-q="e1rm">?</button> <span class="muted" data-i="epley"></span><canvas id="chart" width="600" height="300"></canvas><div id="hist"></div></div>
  <details class="card muted" style="font-size:13px"><summary data-i="ruleH"></summary><div id="rules"></div><div style="margin-top:8px"><button class="q" data-q="prog">?</button> <span data-i="qProgL"></span> <button class="q" data-q="deload">?</button> <span data-i="qDeloadL"></span></div></details>
 </section>
@@ -45,4 +46,5 @@
 </section>
 <nav id="nav" style="grid-template-columns:repeat(4,1fr)"><button data-t="t-log" class="on"><span>📈</span><i data-i="nLog"></i></button><button data-t="t-plate"><span>🏋️</span><i data-i="nPlate"></i></button><button data-t="t-rest"><span>⏱</span><i data-i="nRest"></i></button><button data-t="t-rt"><span>📋</span><i data-i="nRt"></i></button></nav>
 <div id="tip" class="tip" hidden><p id="tipTx"></p><button class="btn p" id="tipX" data-i="tipClose"></button></div><div id="tour" class="tourbg" hidden><div class="tourc"><div class="dots" id="tDots"></div><h3 id="tT"></h3><p id="tB"></p><div class="row2"><button class="btn g" id="tSkip" data-i="tourSkip"></button><button class="btn p" id="tNext"></button></div></div></div>
+<div id="shSheet" class="sheetbg" hidden><div class="sheet"><b data-i="shTitle"></b><p class="shtxt" id="shTxt"></p><img id="shImg" alt="story"><div class="row2"><button class="btn g" id="shCopy" data-i="shCopy"></button><button class="btn p" id="shImgBtn" data-i="shImg"></button></div><button class="btn" id="shX" data-i="shClose"></button></div></div>
 <p id="vis" class="vis" hidden></p><div id="toast" class="toast" hidden></div><script src="logic.js"></script><script src="i18n.js"></script><script src="app.js"></script></body></html>

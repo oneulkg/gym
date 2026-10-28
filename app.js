@@ -38,7 +38,7 @@ function renderLog(){const n=$('#exSel').value,ex=exDef(n),last=lastOf(n),s=L.su
  $$('#sets [data-c]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.c];o.done=!o.done;if(o.done)restAuto();renderLog()});
  $('#note').value=st.notes[n]||'';if(!$('#dt').value)$('#dt').value=today();
  $('#edBar').hidden=editIdx==null;if(editIdx!=null)$('#edTxt').textContent=t('editing',{d:st.log[editIdx].date});$('#save').textContent=t(editIdx==null?'save':'upd');
- $('#bk').hidden=!L.backupDue(st,today());
+ $('#bk').hidden=!L.backupDue(st,today());shareBar();
  $$('#sets input').forEach(i=>i.oninput=()=>sess[i.dataset.k].reps=+i.value);$$('#sets [data-d]').forEach(b=>b.onclick=()=>{sess.splice(b.dataset.d,1);renderLog()});
  $$('#sets [data-r]').forEach(b=>b.onclick=()=>{const o=sess[b.dataset.r];o.reps=Math.max(0,(+o.reps||0)+ +b.dataset.v);renderLog()});
  const h=st.log.filter(x=>x.ex===n);$('#hist').innerHTML=h.length?`<table><tr><th>${t('hDate')}</th><th>${t('hW')}</th><th>${t('hR')}</th><th>e1RM</th><th></th></tr>${h.slice(-8).reverse().map(x=>{const j=st.log.indexOf(x);return`<tr><td>${x.date.slice(5)}${L.pr(st.log,x)?' 🏆':''}</td><td>${L.fmtW(x.weight,U())}</td><td>${x.sets.map(s=>s.reps).join('/')}</td><td>${Math.round(best(x)*10)/10}</td><td style="white-space:nowrap"><button class="ia" data-e="${j}" aria-label="${t('edit')}">✏</button><button class="ia" data-del="${j}" aria-label="${t('del')}">✕</button></td></tr>`}).join('')}</table>`:`<p class="empty">${sent(t('noHist2'))}</p>`;chart(h);
@@ -54,9 +54,9 @@ $('#exSel').onchange=()=>{endEdit();renderLog()};$('#note').oninput=()=>{const v
 $('#allDone').onclick=()=>{const any=sess.some(s=>!s.done);sess.forEach(s=>s.done=any);renderLog()};
 $('#same').onclick=()=>{const l=lastOf($('#exSel').value);if(!l)return toast(t('noHist'));$('#w').value=L.fmtW(l.weight,U());sess=l.sets.map(s=>({reps:s.reps}));renderLog()};$('#addSet').onclick=()=>{sess.push({reps:sess.length?sess[sess.length-1].reps:8});renderLog()};
 $('#save').onclick=()=>{const w=+$('#w').value,sets=L.doneSets(sess);if(!w||!sets.length)return alert(t('needW'));
- const e={ex:$('#exSel').value,date:$('#dt').value||today(),weight:Math.round(L.toKg(w,U())*10000)/10000,sets};const was=editIdx;
+ const e={ex:$('#exSel').value,date:$('#dt').value||today(),weight:Math.round(L.toKg(w,U())*10000)/10000,sets};if(sess.length>sets.length)e.n=sess.length;const was=editIdx;
  if(was!=null)st.log[was]=e;else st.log.push(e);st.log=L.sortLog(st.log);save();
- if(was==null){const p=L.pr(st.log,e);if(p){toast(t('pr',{k:[p.weight&&t('prW'),p.e1rm&&t('prE')].filter(Boolean).join(' · ')}));navigator.vibrate?.(120)}}
+ if(was==null)shareFlash=1;if(was==null){const p=L.pr(st.log,e);if(p){toast(t('pr',{k:[p.weight&&t('prW'),p.e1rm&&t('prE')].filter(Boolean).join(' · ')}));navigator.vibrate?.(120)}}
  endEdit();if(was!=null){renderLog();return}
  const q=st.queue||[],i=q.indexOf($('#exSel').value);if(i>=0&&q[i+1])$('#exSel').value=q[i+1];renderLog()};
 $('#restBtn').onclick=()=>{$('#rEx').value=$('#exSel').value;loadRest();show('t-rest');startT()};
@@ -164,3 +164,43 @@ const SHOW_VISITORS=false;
   const f=n=>Number(n).toLocaleString();el.innerHTML=sent(t('vis',{d:f(d),t:f(tt)}));el.hidden=false;
  }).catch(()=>{});
 }catch(e){}})();
+
+// ===== v13 결과 공유 =====
+var shareFlash=0;
+function shareDate(){return st.log.some(x=>x.date===today())?today():(st.log.length?st.log[st.log.length-1].date:null)}
+function shareSum(){const d=shareDate();return d?L.shareSummary(st.log,d):null}
+function shareTxt(){const s=shareSum();return s?L.shareText(s,{u:U(),lang:st.lang,name:nm}):''}
+function shareBar(){const b=$('#shareBar');if(!b)return;const s=shareSum();b.hidden=!s;if(!s)return;
+ $('#shareLbl').innerHTML=sent(t(s.date===today()?'shToday':'shLast',{d:s.date.slice(5).replace('-','/'),n:s.items.length}));
+ if(shareFlash){shareFlash=0;b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash')}}
+async function copyTxt(x){try{await navigator.clipboard.writeText(x);return true}catch(e){const a=document.createElement('textarea');a.value=x;document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}a.remove();return ok}}
+const FONT='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
+// 캔버스 줄바꿈: 공백 단위(keep-all), 너무 긴 단어만 글자 단위
+function wrapC(g,txt,max){const out=[];let line='';for(const w of String(txt).split(' ')){const tryL=line?line+' '+w:w;if(g.measureText(tryL).width<=max){line=tryL;continue}if(line)out.push(line);line=w;while(g.measureText(line).width>max){let k=line.length;while(k>1&&g.measureText(line.slice(0,k)).width>max)k--;out.push(line.slice(0,k));line=line.slice(k)}}if(line)out.push(line);return out}
+function storyCanvas(){const s=shareSum(),c=document.createElement('canvas');c.width=1080;c.height=1920;const g=c.getContext('2d'),u=U(),UL2=u==='lb'?'lb':'kg',S=L.SH[st.lang]||L.SH.ko;
+ const bg=g.createLinearGradient(0,0,0,1920);bg.addColorStop(0,'#16180f');bg.addColorStop(1,'#0d0d0f');g.fillStyle=bg;g.fillRect(0,0,1080,1920);
+ g.fillStyle='#c6ff3d';g.fillRect(0,0,1080,14);
+ g.textBaseline='alphabetic';g.fillStyle='#fff';g.font=`800 76px ${FONT}`;g.fillText('오늘 ',90,220);const w0=g.measureText('오늘 ').width;g.fillStyle='#c6ff3d';g.fillText('몇 kg',90+w0,220);
+ g.fillStyle='#999';g.font=`500 40px ${FONT}`;const dd=new Date(s.date+'T00:00');g.fillText(dd.toLocaleDateString(st.lang==='en'?'en-US':'ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'}),90,290);
+ let y=420;const it=s.items.slice(0,4),big=it.length===1;
+ for(const i of it){g.fillStyle='#18181c';const h=big?520:275;g.beginPath();g.roundRect(70,y-70,940,h,36);g.fill();g.strokeStyle=i.pr?'#c6ff3d':'#2a2a30';g.lineWidth=i.pr?5:2;g.stroke();
+  g.fillStyle='#eee';g.font=`700 ${big?58:46}px ${FONT}`;g.fillText(nm(i.ex)+(i.pr?'  🏆':''),110,y);
+  g.fillStyle='#c6ff3d';g.font=`900 ${big?120:76}px ${FONT}`;const ln=wrapC(g,L.setStr(i.weight,i.reps,u),860);ln.forEach((l,k)=>g.fillText(l,110,y+(big?150:95)+k*(big?125:80)));const yy=y+(big?150:95)+(ln.length-1)*(big?125:80);
+  g.font=`400 ${big?64:44}px ${FONT}`;g.fillText(L.checks(i.done,i.total),110,yy+(big?110:70));
+  if(big){g.fillStyle='#bbb';g.font=`600 46px ${FONT}`;const dt=i.diff==null?'':(()=>{const d=Math.round(L.toU(i.diff,u)*10)/10;return d?`${S.since} ${d>0?'+':''}${d}${UL2}`:S.same})();if(dt)g.fillText(dt,110,yy+200)}
+  y+=h+40}
+ if(s.items.length>4){g.fillStyle='#999';g.font=`600 40px ${FONT}`;g.fillText(S.more.replace('{n}',s.items.length-4),110,y-10);y+=40}
+ y=Math.max(y+30,1380);const stat=(lab,val,x)=>{g.fillStyle='#999';g.font=`600 38px ${FONT}`;g.fillText(lab,x,y);g.fillStyle='#fff';g.font=`800 64px ${FONT}`;g.fillText(val,x,y+80)};
+ stat(s.items.length>1?S.tvol:S.vol,L.num(L.toU(s.vol,u))+UL2,110);stat(st.lang==='en'?'days trained':'운동한 날',S.days.replace('{n}',s.days),600);
+ if(s.pr){g.fillStyle='#c6ff3d';g.beginPath();g.roundRect(90,1580,900,90,45);g.fill();g.fillStyle='#111';g.font=`800 44px ${FONT}`;g.textAlign='center';g.fillText(st.lang==='en'?'🏆 New PR today':'🏆 오늘 신기록!',540,1640);g.textAlign='left'}
+ g.fillStyle='#c6ff3d';g.fillRect(0,1906,1080,14);g.textAlign='center';g.fillStyle='#eee';g.font=`700 48px ${FONT}`;g.fillText(L.SHARE_URL,540,1800);g.fillStyle='#888';g.font=`500 32px ${FONT}`;g.fillText(st.lang==='en'?'Free · No ads · No sign-up':'무료 · 광고 없음 · 가입 없음',540,1856);g.textAlign='left';
+ return c}
+const blobOf=c=>new Promise(r=>c.toBlob(r,'image/png'));
+function openShare(){const x=shareTxt();if(!x)return;$('#shTxt').textContent=x;const c=storyCanvas();$('#shImg').src=c.toDataURL('image/png');$('#shSheet').hidden=false}
+$('#shareBtn').onclick=openShare;$('#shX').onclick=()=>$('#shSheet').hidden=true;
+$('#shSheet').onclick=e=>{if(e.target.id==='shSheet')$('#shSheet').hidden=true};
+$('#shCopy').onclick=async()=>{toast(t(await copyTxt(shareTxt())?'shCopied':'shCopyFail'))};
+$('#shImgBtn').onclick=async()=>{const b=await blobOf(storyCanvas()),f=new File([b],`oneulkg-${shareDate()}.png`,{type:'image/png'}),x=shareTxt();
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:x});return}}catch(e){if(e&&e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f.name;document.body.appendChild(a);a.click();a.remove();await copyTxt(x);toast(t('shSaved'))};
+shareBar();

@@ -91,3 +91,11 @@ input,select,textarea,#tm{word-break:normal;overflow-wrap:normal}
 .sn{display:inline-block;max-width:100%}
 
 .vis{text-align:center;font-size:12px;opacity:.55;margin:8px 16px 96px;word-break:keep-all}
+
+.share{display:flex;align-items:center;justify-content:space-between;gap:10px;border-color:#c6ff3d55;word-break:keep-all}.share .btn.sm{width:auto;flex:0 0 auto;margin:0;padding:10px 16px;min-height:48px;font-size:16px}
+.share.flash{animation:shf 1.2s ease}@keyframes shf{0%{box-shadow:0 0 0 0 #c6ff3daa}100%{box-shadow:0 0 0 14px #c6ff3d00}}
+.sheetbg{position:fixed;inset:0;z-index:40;background:#000b;display:flex;align-items:flex-end}.sheetbg[hidden]{display:none}
+.sheet{width:100%;max-height:92vh;overflow:auto;background:#18181c;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));word-break:keep-all}
+.shtxt{background:#0d0d0f;border:1px solid #3a3a42;border-radius:12px;padding:12px;font-size:15px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere;user-select:all}
+.sheet img{display:block;width:46%;margin:6px auto 4px;border-radius:12px;border:1px solid #2a2a30}
+.share[hidden]{display:none}
