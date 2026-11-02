@@ -586,7 +586,7 @@ canvas {
   <label class="pick" style="flex:1;margin:0">📷 사진 여러 장 고르기<input id="files" type="file" accept="image/*" multiple hidden></label>
   <button id="btn-reset-photos" class="ghost" style="flex:0 0 auto;padding:15px 18px;border-radius:14px;color:#FF7B7B;border-color:rgba(255,123,123,0.3);font-size:13px;font-weight:800" title="올린 사진과 분석 결과를 모두 지우고 초기 상태로 되돌립니다">초기화</button>
 </div>
-<p class="small" style="color:var(--a);font-weight:700">🔥 인스타그램 1,000+ 좋아요 피트니스 빅데이터 기반 AI 선별</p><p class="small">실제 인스타 인기 피드에서 검증된 체형 비율(V-Taper/S-Curve)과 포즈 각도, 조명 명암비를 분석해 가장 반응이 뜨거울 3장을 골라 드려요.</p><div id="rank"></div></section>
+<p class="small" style="color:var(--a);font-weight:700">AI 픽 TOP3</p><div id="rank"></div></section>
 
 <section id="s-edit" class="scr"><h2>사진 보정 · 기록 공유 <span class="pro">PRO</span></h2>
 <p class="small" id="enone">베스트샷 탭에서 사진을 먼저 골라 주세요.</p>
@@ -657,10 +657,10 @@ function why(x){
   if(window.InstaEvaluator&&x.score&&x.pose){
     const res=InstaEvaluator.evaluateInstaAppeal(x.score,x.pose,window.PoseAI?.mode||localStorage.getItem('gp_mode')||'male');
     if(res&&res.feedback&&res.feedback.length){
-      return `[인스타 1,000+ 좋아요 ${res.likeProbability}%] ${res.matchedArchetype} · ${res.feedback[0]}`;
+      return `${res.matchedArchetype} · ${res.feedback[0]}`;
     }
   }
-  const p=x.pose;const a=p&&p.appeal;if(a){const nm=p.name||'';if(a.femBonus>=9)return `${nm} · ${a.femKey==='bust'?'상체 볼륨감이 좋아요':'골반 라인이 잘 살았어요'}`;if(a.curve>=0.7&&/힙|프리|백|비키니|프론트 스탠스/.test(nm))return `${nm} · 힙 라인이 잘 살았어요`;if(a.texture>=0.7&&a.sculpt>=0.6)return `${nm} · 근육 결·펌핑이 선명해요`;if(a.sculpt>=0.7)return `${nm} · 조명이 근육 굴곡을 잘 살려요`;if(a.size>=0.7)return `${nm} · 어깨·팔 실루엣이 커 보여요`}if(p&&p.upper){if(p.flexAngle&&p.flexAngle<100)return `${p.name} · 팔 펌핑이 잘 보여요`;if(p.taper&&p.taper>=1.4)return `${p.name} · 어깨-허리 라인이 좋아요`;if(p.fill>=0.7)return `${p.name} · 상체가 화면을 꽉 채웠어요`;if(p.match>=0.8)return `${p.name} 자세가 좋아요`}if(p&&p.name&&p.match>=0.6)return `${p.name} 자세가 좋아요`;if(p&&p.name&&p.sym>=0.85)return '좌우 균형이 좋아요';const r=P.reasons(x.score,'ko').filter(t=>t.startsWith('👍'));return r.length?r[0].replace('👍 ',''):'그나마 가장 나은 컷이에요'}
+  const p=x.pose;const a=p&&p.appeal;if(a){const nm=p.name||'';if(a.femBonus>=9)return `${nm} · ${a.femKey==='bust'?'상체 볼륨감이 좋아요':'골반 라인이 잘 살았어요'}`;if(a.curve>=0.7&&/힙|프리|백|프론트 스탠스/.test(nm))return `${nm} · 힙 라인이 잘 살았어요`;if(a.texture>=0.7&&a.sculpt>=0.6)return `${nm} · 근육 결·펌핑이 선명해요`;if(a.sculpt>=0.7)return `${nm} · 조명이 근육 굴곡을 잘 살려요`;if(a.size>=0.7)return `${nm} · 어깨·팔 실루엣이 커 보여요`}if(p&&p.upper){if(p.flexAngle&&p.flexAngle<100)return `${p.name} · 팔 펌핑이 잘 보여요`;if(p.taper&&p.taper>=1.4)return `${p.name} · 어깨-허리 라인이 좋아요`;if(p.fill>=0.7)return `${p.name} · 상체가 화면을 꽉 채웠어요`;if(p.match>=0.8)return `${p.name} 자세가 좋아요`}if(p&&p.name&&p.match>=0.6)return `${p.name} 자세가 좋아요`;if(p&&p.name&&p.sym>=0.85)return '좌우 균형이 좋아요';const r=P.reasons(x.score,'ko').filter(t=>t.startsWith('👍'));return r.length?r[0].replace('👍 ',''):'그나마 가장 나은 컷이에요'}
 function resetPhotos(){
  photos=[];cur=null;$('#files').value='';$('#rank').innerHTML='';
  $('#editor').hidden=true;$('#enone').hidden=false;
@@ -668,7 +668,7 @@ function resetPhotos(){
 }
 function renderRank(){const r=P.rank(photos).slice(0,3),M=['🥇','🥈','🥉'],C=['#FFD54A','#D8DEE6','#E0A070'];
  if(!r.length){$('#rank').innerHTML='';return}
- $('#rank').innerHTML=(photos.length<3?`<p class="small">사진 ${photos.length}장 중 순위예요. 3장 이상 올리면 TOP 3를 골라 드려요.</p>`:`<p class="small">${photos.length}장 중 TOP ${r.length}</p>`)+r.map((x,k)=>`<div class="it top t${k+1}" data-i="${x.i}" style="--m:${C[k]}"><div class="medal">${M[k]} ${k+1}위</div><img src="${x.src}" alt="${k+1}위 사진"><div class="why">${why(x)}</div></div>`).join('')+'<div class="row" style="margin-top:14px"><button id="btn-clear-rank" class="ghost" style="width:100%;color:#FF7B7B;border-color:rgba(255,123,123,0.35);padding:12px;font-size:13px;border-radius:12px">🗑️ 사진 및 분석 결과 전체 초기화</button></div><p class="small" style="margin-top:6px">사진을 누르면 보정·공유로 가요</p>';
+ $('#rank').innerHTML=(photos.length<3?`<p class="small">사진 ${photos.length}장 중 순위예요. 3장 이상 올리면 TOP 3를 골라 드려요.</p>`:`<p class="small">${photos.length}장 중 TOP ${r.length}</p>`)+r.map((x,k)=>`<div class="it top t${k+1}" data-i="${x.i}" style="--m:${C[k]}"><div class="medal">${M[k]} ${k+1}위</div><img src="${x.src}" alt="${k+1}위 사진"></div>`).join('')+'<div class="row" style="margin-top:14px"><button id="btn-clear-rank" class="ghost" style="width:100%;color:#FF7B7B;border-color:rgba(255,123,123,0.35);padding:12px;font-size:13px;border-radius:12px">🗑️ 사진 및 분석 결과 전체 초기화</button></div><p class="small" style="margin-top:6px">사진을 누르면 보정·공유로 가요</p>';
  document.querySelectorAll('.it').forEach(e=>e.onclick=()=>{cur=photos[+e.dataset.i];draw()});
  const bc=$('#btn-clear-rank');if(bc)bc.onclick=resetPhotos;
 }
