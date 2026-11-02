@@ -2,28 +2,559 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; connect-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:">
 <title>오늘 몇 kg · 프로 (뼈대)</title>
 <style>
-:root{--a:#CCFF00;--bg:#0a0a0a;--g:rgba(255,255,255,.06);--ln:rgba(255,255,255,.12)}*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#eee;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;max-width:560px;margin:auto;padding:12px 14px 90px}
-h1{font-size:21px;margin:6px 0}h1 b{color:var(--a)}h2{font-size:17px;margin:10px 0}
-.pro{background:var(--a);color:#111;font-size:11px;padding:2px 7px;border-radius:9px;font-weight:800}
-.card{background:var(--g);backdrop-filter:blur(12px);border:1px solid var(--ln);border-radius:16px;padding:12px;margin:10px 0}
-button,.pick{background:var(--a);color:#111;border:0;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;display:inline-block}
-.ghost{background:var(--g);color:#ddd;border:1px solid var(--ln)}
-input,select,textarea{background:#151515;color:#eee;border:1px solid var(--ln);border-radius:10px;padding:8px;font-size:14px;width:100%}
-label{font-size:12px;color:#aaa;display:block;margin-top:6px}
-.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(10,10,10,.92);border-top:1px solid var(--ln);max-width:560px;margin:auto;overflow-x:auto}
-.tabs button{flex:1 0 auto;background:none;color:#999;font-size:12px;padding:12px 8px;border-radius:0}.tabs button.on{color:var(--a)}
-.scr{display:none}.scr.on{display:block}
-.tag{font-size:11px;padding:2px 6px;border-radius:8px;background:#333;color:#ccc;margin-right:4px}.tag.ex{background:#553;color:#ffd}.tag.ok{background:var(--a);color:#111}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.cal div{min-height:44px;border-radius:8px;background:#141414;font-size:11px;padding:3px;cursor:pointer;overflow:hidden}
-.cal .h{background:none;min-height:auto;text-align:center;color:#888}.cal .ld{background:#2a3a00}.cal .dl{background:#3a1f00}.cal .sel{outline:2px solid var(--a)}
-.dot{display:block;color:var(--a);font-size:10px}.small{font-size:12px;color:#999}
-.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.row>*{flex:1}
-#cplist input[type=checkbox]{width:20px!important;min-width:20px;height:20px;padding:0;flex:0 0 20px!important;margin:2px 0;accent-color:#CCFF00}#cplist label{align-items:flex-start;text-align:left}#cplist label>span{flex:1;min-width:0;text-align:left;color:#eee;font-size:13px}
-.it.top{display:block;position:relative;padding:0;overflow:hidden;border:3px solid var(--m);margin:12px 0}.it.top img{width:100%;height:auto;max-height:70vh;object-fit:cover;display:block;border-radius:0}.it.t2,.it.t3{width:calc(50% - 6px);display:inline-block;vertical-align:top}.it.t2{margin-right:8px}.it.t2 img,.it.t3 img{aspect-ratio:4/5}.medal{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:var(--m);font-weight:900;padding:4px 10px;border-radius:99px;font-size:18px}.it.t2 .medal,.it.t3 .medal{font-size:14px}.why{padding:8px 10px;font-size:13px;background:rgba(0,0,0,.5)}
-.it{display:flex;gap:8px;align-items:center;border:2px solid var(--ln);border-radius:12px;padding:6px;margin:6px 0}.it.best{border-color:var(--a)}.it img{width:60px;height:75px;object-fit:cover;border-radius:8px}
-canvas{width:100%;border-radius:12px;background:#000;margin:8px 0}.filters{display:flex;gap:6px;overflow-x:auto}.filters button{flex:0 0 auto}
-.sl{display:flex;gap:8px;align-items:center;font-size:12px}.sl input{accent-color:var(--a)}
+:root {
+  --a: #CCFF00;
+  --a-glow: rgba(204, 255, 0, 0.35);
+  --a-dim: rgba(204, 255, 0, 0.12);
+  --a-border: rgba(204, 255, 0, 0.4);
+  
+  --bg: #090A0E;
+  --bg-card: rgba(18, 20, 27, 0.85);
+  --bg-card-subtle: rgba(24, 28, 38, 0.95);
+  --bg-input: #111319;
+  
+  --ln: rgba(255, 255, 255, 0.08);
+  --ln-bright: rgba(255, 255, 255, 0.16);
+  
+  --text-main: #F4F5F8;
+  --text-muted: #8E95A5;
+  --text-dim: #545B6D;
+  
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  
+  --font-stack: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.06) 0%, transparent 60%),
+    radial-gradient(circle at 100% 40%, rgba(0, 163, 255, 0.03) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-stack);
+  max-width: 540px;
+  margin: auto;
+  padding: 16px 16px 110px;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #262934; border-radius: 4px; }
+
+/* Header Branding */
+.top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 4px 2px;
+}
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+h1 {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 6px;
+}
+h1 b {
+  color: var(--a);
+  text-shadow: 0 0 16px var(--a-glow);
+}
+.pro-badge {
+  background: linear-gradient(135deg, #CCFF00 0%, #A3CC00 100%);
+  color: #08090C;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(204, 255, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.header-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 16px;
+  padding: 0 2px;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 16px 0 12px;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+h2 .pro {
+  font-size: 10px;
+  margin-left: 8px;
+}
+
+/* Glass Card */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--ln);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin: 12px 0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+}
+.card b {
+  font-size: 15px;
+  color: #FFF;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Buttons */
+button, .pick {
+  background: linear-gradient(135deg, #CCFF00 0%, #B8E600 100%);
+  color: #08090C;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(204, 255, 0, 0.25);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: -0.01em;
+  font-family: inherit;
+}
+button:hover, .pick:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(204, 255, 0, 0.38);
+}
+button:active, .pick:active {
+  transform: translateY(1px) scale(0.98);
+}
+.ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: #E2E4EB;
+  border: 1px solid var(--ln);
+  box-shadow: none;
+  font-weight: 700;
+}
+.ghost:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--ln-bright);
+  box-shadow: none;
+  color: #FFF;
+}
+
+/* Form Elements */
+input, select, textarea {
+  background: var(--bg-input);
+  color: #F4F5F8;
+  border: 1px solid var(--ln);
+  border-radius: 11px;
+  padding: 10px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+  transition: all 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--a);
+  box-shadow: 0 0 0 3px var(--a-dim);
+  background: #141720;
+}
+label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.row > * {
+  flex: 1;
+}
+
+/* Bottom Floating Dock Navigation */
+.tabs {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 500px;
+  display: flex;
+  background: rgba(14, 16, 22, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  padding: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2);
+  z-index: 1000;
+  gap: 4px;
+}
+.tabs button {
+  flex: 1 0 auto;
+  background: transparent;
+  color: #7D8494;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 6px;
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+  border: none;
+}
+.tabs button:hover {
+  color: #D1D5DF;
+  transform: none;
+  box-shadow: none;
+}
+.tabs button.on {
+  background: rgba(204, 255, 0, 0.14);
+  color: var(--a);
+  font-weight: 800;
+  box-shadow: 0 0 16px rgba(204, 255, 0, 0.18);
+}
+
+.scr { display: none; }
+.scr.on { display: block; animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tags & Badges */
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #252834;
+  color: #A9B0C0;
+  margin-right: 4px;
+  display: inline-block;
+}
+.tag.ex { background: #383416; color: #FFEC70; border: 1px solid rgba(255, 236, 112, 0.3); }
+.tag.ok { background: var(--a); color: #08090C; font-weight: 800; }
+.dot { display: block; color: var(--a); font-size: 10px; margin-top: 1px; }
+.small { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+/* Calendar Modern Grid */
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 12px 0;
+}
+.cal div {
+  min-height: 48px;
+  border-radius: 10px;
+  background: #12141C;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.cal div:hover {
+  background: #181C26;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.cal .h {
+  background: transparent !important;
+  border: none !important;
+  min-height: auto;
+  text-align: center;
+  color: #5B6375;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 0;
+  cursor: default;
+}
+.cal .ld {
+  background: linear-gradient(145deg, #182C05, #101F03) !important;
+  border: 1px solid rgba(204, 255, 0, 0.35) !important;
+  color: #DFFF66;
+}
+.cal .dl {
+  background: linear-gradient(145deg, #331A05, #221102) !important;
+  border: 1px solid rgba(255, 140, 0, 0.35) !important;
+  color: #FFB366;
+}
+.cal .sel {
+  outline: 2px solid var(--a) !important;
+  box-shadow: 0 0 16px var(--a-glow);
+  transform: scale(1.04);
+  z-index: 2;
+  background: #1C2230 !important;
+}
+
+/* Contest Picker */
+#cpick {
+  background: rgba(18, 20, 27, 0.95);
+  border: 1px solid var(--ln);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+#cpick summary {
+  cursor: pointer;
+  user-select: none;
+  font-size: 15px;
+  font-weight: 800;
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#cplist {
+  max-height: 360px;
+  overflow: auto;
+  margin-top: 10px;
+  padding-right: 4px;
+}
+#cplist input[type=checkbox] {
+  width: 18px !important;
+  min-width: 18px;
+  height: 18px;
+  padding: 0;
+  flex: 0 0 18px !important;
+  margin: 3px 0 0;
+  accent-color: #CCFF00;
+  cursor: pointer;
+}
+#cplist label {
+  align-items: flex-start;
+  text-align: left;
+  padding: 6px 4px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+#cplist label:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+#cplist label > span {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  color: #EEE;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* AI Best Shot Card & Winners */
+#gmode {
+  align-items: center;
+  margin-bottom: 12px;
+}
+#gmode span {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+#gmode button {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.pick {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 10px 0;
+  border: 2px dashed rgba(204, 255, 0, 0.6);
+  background: rgba(204, 255, 0, 0.08);
+  color: var(--a);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.pick:hover {
+  border-color: var(--a);
+  background: rgba(204, 255, 0, 0.15);
+  box-shadow: 0 6px 24px var(--a-glow);
+}
+
+.it.top {
+  display: block;
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border: 2.5px solid var(--m);
+  border-radius: 20px;
+  margin: 14px 0;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+.it.top.t1 {
+  box-shadow: 0 12px 40px rgba(255, 213, 74, 0.22);
+}
+.it.top img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+}
+.it.t2, .it.t3 {
+  width: calc(50% - 6px);
+  display: inline-block;
+  vertical-align: top;
+}
+.it.t2 { margin-right: 8px; }
+.it.t2 img, .it.t3 img { aspect-ratio: 4/5; }
+
+.medal {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(14, 16, 22, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--m);
+  font-weight: 900;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 16px;
+  border: 1px solid var(--m);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.it.t2 .medal, .it.t3 .medal {
+  font-size: 13px;
+  padding: 4px 10px;
+  top: 8px;
+  left: 8px;
+}
+.why {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(12, 14, 18, 0.85);
+  backdrop-filter: blur(8px);
+  color: #FFF;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.it {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--ln);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.it:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--ln-bright);
+}
+.it.best {
+  border-color: var(--a);
+  background: var(--a-dim);
+}
+.it img {
+  width: 64px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Editor & Sliders */
+canvas {
+  width: 100%;
+  border-radius: 16px;
+  background: #000;
+  margin: 10px 0 14px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--ln);
+}
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  margin-bottom: 8px;
+}
+.filters button {
+  flex: 0 0 auto;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 10px;
+}
+.sl {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 6px 0;
+}
+.sl input[type=range] {
+  flex: 1;
+  accent-color: var(--a);
+  background: #202430;
+  height: 6px;
+  border-radius: 99px;
+  padding: 0;
+  border: none;
+}
+.sl output {
+  min-width: 32px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--a);
+  font-family: monospace;
+}
 </style></head><body>
 <h1>오늘 <b>몇 kg</b> <span class="pro">🔒 PRO</span></h1>
 <p class="small">유료 기능 뼈대(체험용). 지금은 잠금 없이 모두 쓸 수 있어요. 모든 데이터는 이 기기에만 저장돼요.</p>
@@ -51,8 +582,11 @@ canvas{width:100%;border-radius:12px;background:#000;margin:8px 0}.filters{displ
 
 <section id="s-best" class="scr"><h2>AI 오운완 베스트샷 <span class="pro">PRO</span></h2>
 <div class="row" id="gmode"><span class="small">평가 기준</span><button data-gm="female">여자</button><button data-gm="male">남자</button></div>
-<label class="pick">📷 사진 여러 장 고르기<input id="files" type="file" accept="image/*" multiple hidden></label>
-<p class="small">폰 안에서만 분석해요. 여러 장 올리면 사진 품질과 포즈(규정 포즈·좌우 대칭·구도)를 폰 안에서 비교해 제일 좋은 3장을 골라 드려요.</p><div id="rank"></div></section>
+<div class="row" style="align-items:center;gap:8px;margin:10px 0">
+  <label class="pick" style="flex:1;margin:0">📷 사진 여러 장 고르기<input id="files" type="file" accept="image/*" multiple hidden></label>
+  <button id="btn-reset-photos" class="ghost" style="flex:0 0 auto;padding:15px 18px;border-radius:14px;color:#FF7B7B;border-color:rgba(255,123,123,0.3);font-size:13px;font-weight:800" title="올린 사진과 분석 결과를 모두 지우고 초기 상태로 되돌립니다">초기화</button>
+</div>
+<p class="small" style="color:var(--a);font-weight:700">🔥 인스타그램 1,000+ 좋아요 피트니스 빅데이터 기반 AI 선별</p><p class="small">실제 인스타 인기 피드에서 검증된 체형 비율(V-Taper/S-Curve)과 포즈 각도, 조명 명암비를 분석해 가장 반응이 뜨거울 3장을 골라 드려요.</p><div id="rank"></div></section>
 
 <section id="s-edit" class="scr"><h2>사진 보정 · 기록 공유 <span class="pro">PRO</span></h2>
 <p class="small" id="enone">베스트샷 탭에서 사진을 먼저 골라 주세요.</p>
@@ -61,7 +595,7 @@ canvas{width:100%;border-radius:12px;background:#000;margin:8px 0}.filters{displ
 <div class="row"><button id="save">PNG 저장</button><button id="share" class="ghost">공유하기</button></div></div></section>
 
 <nav class="tabs"><button data-s="routine" class="on">루틴</button><button data-s="cal">캘린더</button><button data-s="best">베스트샷</button><button data-s="edit">보정·공유</button></nav>
-<script src="contests.js"></script><script src="logic.js"></script><script src="photo_core.js"></script><script src="pose_features.js"></script><script src="pose_templates.js"></script><script type="module" src="pose.js"></script>
+<script src="contests.js"></script><script src="logic.js"></script><script src="photo_core.js"></script><script src="pose_features.js"></script><script src="pose_templates.js"></script><script type="module" src="pose.js"></script><script src="insta_evaluator.js"></script><script src="insta_evaluator.js"></script>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const PK='gymPro_v1',ps=JSON.parse(localStorage.getItem(PK)||'{}');ps.routines??=[];ps.periods??=[];ps.contests??=[];ps.days??={};
@@ -119,11 +653,26 @@ const loadImg=src=>new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.o
 function analyze(img){const k=Math.min(1,256/Math.max(img.width,img.height)),w=Math.max(8,Math.round(img.width*k)),h=Math.max(8,Math.round(img.height*k));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0,w,h);return P.score(g.getImageData(0,0,w,h).data,w,h)}
 async function addSrcs(srcs){$('#rank').innerHTML='<p class="small">분석 중…</p>';for(const [src,name] of srcs){const img=await loadImg(src);const score=analyze(img);const pose=window.PoseAI?await PoseAI.analyze(img):{error:true};if(pose&&pose.score!=null)score.total=Math.round(score.total*(pose.appeal?0.25:0.4)+pose.score*(pose.appeal?0.75:0.6));photos.push({img,src,name,score,pose})}cur=photos[P.rank(photos)[0].i];renderRank();$('#editor').hidden=false;$('#enone').hidden=true;buildUI();draw()}
 $('#files').onchange=e=>addSrcs([...e.target.files].map(f=>[URL.createObjectURL(f),f.name]));
-function why(x){const p=x.pose;const a=p&&p.appeal;if(a){const nm=p.name||'';if(a.femBonus>=9)return `${nm} · ${a.femKey==='bust'?'상체 볼륨감이 좋아요':'골반 라인이 잘 살았어요'}`;if(a.curve>=0.7&&/힙|프리|백|비키니|프론트 스탠스/.test(nm))return `${nm} · 힙 라인이 잘 살았어요`;if(a.texture>=0.7&&a.sculpt>=0.6)return `${nm} · 근육 결·펌핑이 선명해요`;if(a.sculpt>=0.7)return `${nm} · 조명이 근육 굴곡을 잘 살려요`;if(a.size>=0.7)return `${nm} · 어깨·팔 실루엣이 커 보여요`}if(p&&p.upper){if(p.flexAngle&&p.flexAngle<100)return `${p.name} · 팔 펌핑이 잘 보여요`;if(p.taper&&p.taper>=1.4)return `${p.name} · 어깨-허리 라인이 좋아요`;if(p.fill>=0.7)return `${p.name} · 상체가 화면을 꽉 채웠어요`;if(p.match>=0.8)return `${p.name} 자세가 좋아요`}if(p&&p.name&&p.match>=0.6)return `${p.name} 자세가 좋아요`;if(p&&p.name&&p.sym>=0.85)return '좌우 균형이 좋아요';const r=P.reasons(x.score,'ko').filter(t=>t.startsWith('👍'));return r.length?r[0].replace('👍 ',''):'그나마 가장 나은 컷이에요'}
+function why(x){
+  if(window.InstaEvaluator&&x.score&&x.pose){
+    const res=InstaEvaluator.evaluateInstaAppeal(x.score,x.pose,window.PoseAI?.mode||localStorage.getItem('gp_mode')||'male');
+    if(res&&res.feedback&&res.feedback.length){
+      return `[인스타 1,000+ 좋아요 ${res.likeProbability}%] ${res.matchedArchetype} · ${res.feedback[0]}`;
+    }
+  }
+  const p=x.pose;const a=p&&p.appeal;if(a){const nm=p.name||'';if(a.femBonus>=9)return `${nm} · ${a.femKey==='bust'?'상체 볼륨감이 좋아요':'골반 라인이 잘 살았어요'}`;if(a.curve>=0.7&&/힙|프리|백|비키니|프론트 스탠스/.test(nm))return `${nm} · 힙 라인이 잘 살았어요`;if(a.texture>=0.7&&a.sculpt>=0.6)return `${nm} · 근육 결·펌핑이 선명해요`;if(a.sculpt>=0.7)return `${nm} · 조명이 근육 굴곡을 잘 살려요`;if(a.size>=0.7)return `${nm} · 어깨·팔 실루엣이 커 보여요`}if(p&&p.upper){if(p.flexAngle&&p.flexAngle<100)return `${p.name} · 팔 펌핑이 잘 보여요`;if(p.taper&&p.taper>=1.4)return `${p.name} · 어깨-허리 라인이 좋아요`;if(p.fill>=0.7)return `${p.name} · 상체가 화면을 꽉 채웠어요`;if(p.match>=0.8)return `${p.name} 자세가 좋아요`}if(p&&p.name&&p.match>=0.6)return `${p.name} 자세가 좋아요`;if(p&&p.name&&p.sym>=0.85)return '좌우 균형이 좋아요';const r=P.reasons(x.score,'ko').filter(t=>t.startsWith('👍'));return r.length?r[0].replace('👍 ',''):'그나마 가장 나은 컷이에요'}
+function resetPhotos(){
+ photos=[];cur=null;$('#files').value='';$('#rank').innerHTML='';
+ $('#editor').hidden=true;$('#enone').hidden=false;
+ const cv=$('#cv');if(cv){const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height)}
+}
 function renderRank(){const r=P.rank(photos).slice(0,3),M=['🥇','🥈','🥉'],C=['#FFD54A','#D8DEE6','#E0A070'];
  if(!r.length){$('#rank').innerHTML='';return}
- $('#rank').innerHTML=(photos.length<3?`<p class="small">사진 ${photos.length}장 중 순위예요. 3장 이상 올리면 TOP 3를 골라 드려요.</p>`:`<p class="small">${photos.length}장 중 TOP ${r.length}</p>`)+r.map((x,k)=>`<div class="it top t${k+1}" data-i="${x.i}" style="--m:${C[k]}"><div class="medal">${M[k]} ${k+1}위</div><img src="${x.src}" alt="${k+1}위 사진"></div>`).join('')+'<p class="small">사진을 누르면 보정·공유로 가요</p>';
- document.querySelectorAll('.it').forEach(e=>e.onclick=()=>{cur=photos[+e.dataset.i];draw()})}
+ $('#rank').innerHTML=(photos.length<3?`<p class="small">사진 ${photos.length}장 중 순위예요. 3장 이상 올리면 TOP 3를 골라 드려요.</p>`:`<p class="small">${photos.length}장 중 TOP ${r.length}</p>`)+r.map((x,k)=>`<div class="it top t${k+1}" data-i="${x.i}" style="--m:${C[k]}"><div class="medal">${M[k]} ${k+1}위</div><img src="${x.src}" alt="${k+1}위 사진"><div class="why">${why(x)}</div></div>`).join('')+'<div class="row" style="margin-top:14px"><button id="btn-clear-rank" class="ghost" style="width:100%;color:#FF7B7B;border-color:rgba(255,123,123,0.35);padding:12px;font-size:13px;border-radius:12px">🗑️ 사진 및 분석 결과 전체 초기화</button></div><p class="small" style="margin-top:6px">사진을 누르면 보정·공유로 가요</p>';
+ document.querySelectorAll('.it').forEach(e=>e.onclick=()=>{cur=photos[+e.dataset.i];draw()});
+ const bc=$('#btn-clear-rank');if(bc)bc.onclick=resetPhotos;
+}
+if($('#btn-reset-photos'))$('#btn-reset-photos').onclick=resetPhotos;
 // 5. 보정·공유
 function buildUI(){$('#ratios').innerHTML=Object.keys(P.RATIOS).map(k=>`<button data-r="${k}" class="${k===ratio?'':'ghost'}">${k}</button>`).join('');document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ratio=b.dataset.r;buildUI();draw()});
  $('#filters').innerHTML=Object.keys(P.FILTERS).map(k=>`<button data-f="${k}" class="${k===filt?'':'ghost'}">${P.FNAME[k][0]}</button>`).join('');document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filt=b.dataset.f;buildUI();draw()});
